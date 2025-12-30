@@ -51,15 +51,23 @@ class AsyncRaceCollector:
             await self.session.close()
     
     def _is_cache_valid(self, path: str, max_age: Optional[int]) -> bool:
-        """Check if cached file is still valid"""
-        if not os.path.exists(path):
-            return False
-        if max_age is None:
-            return True
+        """Check if cached file is still valid (checks both .html and .html.gz)"""
+        # Check both compressed and uncompressed versions
+        paths_to_check = [path]
+        if path.endswith('.gz'):
+            paths_to_check.append(path[:-3])  # Also check without .gz
+        else:
+            paths_to_check.append(path + '.gz')  # Also check with .gz
         
-        mtime = os.path.getmtime(path)
-        age = datetime.now().timestamp() - mtime
-        return age < max_age
+        for p in paths_to_check:
+            if os.path.exists(p):
+                if max_age is None:
+                    return True
+                mtime = os.path.getmtime(p)
+                age = datetime.now().timestamp() - mtime
+                if age < max_age:
+                    return True
+        return False
     
     async def _download_one(self, task: DownloadTask) -> Tuple[str, bool, Optional[str]]:
         """Download a single URL with rate limiting"""
@@ -130,7 +138,7 @@ class AsyncRaceCollector:
                     url=f"{self.BASE_URL}/racelist?rno={race_no}&jcd={jyo_cd}&hd={date_str}",
                     save_path=os.path.join(base_path, f"program_{race_no}.html"),
                     max_age=max_age,
-                    compress=not is_today
+                    compress=False
                 ))
                 
                 # Before Info (weather, exhibition)
@@ -138,7 +146,7 @@ class AsyncRaceCollector:
                     url=f"{self.BASE_URL}/beforeinfo?rno={race_no}&jcd={jyo_cd}&hd={date_str}",
                     save_path=os.path.join(base_path, f"beforeinfo_{race_no}.html"),
                     max_age=max_age,
-                    compress=not is_today
+                    compress=False
                 ))
                 
                 # Race Result
@@ -146,7 +154,7 @@ class AsyncRaceCollector:
                     url=f"{self.BASE_URL}/raceresult?rno={race_no}&jcd={jyo_cd}&hd={date_str}",
                     save_path=os.path.join(base_path, f"result_{race_no}.html"),
                     max_age=max_age,
-                    compress=not is_today
+                    compress=False
                 ))
                 
                 # Odds (2-ren, 3-ren)
@@ -154,14 +162,14 @@ class AsyncRaceCollector:
                     url=f"{self.BASE_URL}/odds2tf?rno={race_no}&jcd={jyo_cd}&hd={date_str}",
                     save_path=os.path.join(base_path, f"odds2_{race_no}.html"),
                     max_age=settings.cache_ttl_realtime if is_today else max_age,
-                    compress=not is_today
+                    compress=False
                 ))
                 
                 tasks.append(DownloadTask(
                     url=f"{self.BASE_URL}/odds3t?rno={race_no}&jcd={jyo_cd}&hd={date_str}",
                     save_path=os.path.join(base_path, f"odds3_{race_no}.html"),
                     max_age=settings.cache_ttl_realtime if is_today else max_age,
-                    compress=not is_today
+                    compress=False
                 ))
         
         return tasks

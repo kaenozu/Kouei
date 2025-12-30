@@ -36,34 +36,33 @@ async def sync_data(background_tasks: BackgroundTasks):
 
 
 @router.post("/fetch")
-async def trigger_fetch(date: str = Query(..., pattern=r"^\d{8}$")):
-    """Trigger data collection for a specific date"""
+async def trigger_fetch(
+    date: str = Query(..., pattern=r"^\d{8}$"),
+    background_tasks: BackgroundTasks = None
+):
+    """Trigger data collection for a specific date (async)"""
     try:
-        # 1. Download
-        result1 = subprocess.run(
-            ["python", "-m", "src.collector.collect_data", "--start_date", date, "--end_date", date],
-            capture_output=True,
-            text=True,
-            timeout=300
-        )
+        from src.collector.async_collector import AsyncRaceCollector
+        from datetime import datetime
         
-        # 2. Rebuild dataset
-        result2 = subprocess.run(
-            ["python", "-m", "src.features.build_dataset"],
-            capture_output=True,
-            text=True,
-            timeout=120
-        )
+        target_date = datetime.strptime(date, "%Y%m%d").date()
+        
+        # Run async collection
+        async with AsyncRaceCollector() as collector:
+            stats = await collector.collect_date(target_date)
+        
+        # Rebuild dataset incrementally
+        from src.features.build_dataset_incremental import build_dataset_incremental
+        build_dataset_incremental()
         
         # Refresh cached dataframe
         refresh_dataframe()
         
         return {
             "status": "success",
-            "message": f"Data for {date} fetched and dataset rebuilt."
+            "message": f"Data for {date} fetched and dataset rebuilt.",
+            "stats": stats
         }
-    except subprocess.TimeoutExpired:
-        return {"status": "error", "message": "Operation timed out"}
     except Exception as e:
         logger.error(f"Fetch error: {e}")
         return {"status": "error", "message": str(e)}
@@ -107,7 +106,7 @@ def run_sync():
         now = datetime.now()
         
         from src.collector.collect_data import RaceCollector
-        from src.features.build_dataset import build_dataset
+        from src.features.build_dataset_incremental import build_dataset_incremental as build_dataset
         
         collector = RaceCollector()
         collector.collect(now.date(), now.date())
