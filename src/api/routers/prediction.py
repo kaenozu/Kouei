@@ -8,6 +8,7 @@ from src.api.dependencies import (
     get_predictor, get_dataframe, get_cache, 
     get_stadium_name, FEATURE_NAMES_JP
 )
+from src.model.predictor import Predictor
 from src.api.schemas.common import (
     PredictionResponse, BoatPrediction, BettingTip,
     ConfidenceLevel, ErrorResponse, WhatIfRequest
@@ -263,3 +264,78 @@ def _predict_race_development(sorted_results: list, race_data: pd.DataFrame) -> 
         development["まくり"] = (boat4_prob + boat2_prob) / total * 30
     
     return development
+
+
+@router.get("/prediction-with-odds")
+async def get_prediction_with_odds(
+    date: str = Query(..., pattern=r"^\d{8}$"),
+    jyo: str = Query(..., pattern=r"^\d{2}$"),
+    race: int = Query(..., ge=1, le=12),
+    predictor: Predictor = Depends(get_predictor),
+    cache: RedisCache = Depends(get_cache)
+):
+    """Get prediction with real-time odds and expected value"""
+    from src.collector.odds_collector import get_realtime_odds
+    from src.model.ensemble import get_ensemble
+    
+    cache_key = f"pred_odds:{date}:{jyo}:{race}"
+    
+    # Get base prediction
+    base_result = await get_prediction(date, jyo, race, predictor, cache)
+    
+    if "error" in base_result:
+        return base_result
+    
+    # Get real-time odds
+    try:
+        odds_data = await get_realtime_odds(date, jyo, race)
+        
+        # Calculate expected value
+        predictions = base_result.get("predictions", [])
+        for pred in predictions:
+            boat_no = pred.get("boat_no", 0)
+            prob = pred.get("probability", 0)
+            
+            # Tansho EV
+            tansho_odds = odds_data.tansho.get(boat_no, 0)
+            if tansho_odds > 0 and prob > 0:
+                ev = prob * tansho_odds - (1 - prob)
+                pred["tansho_odds"] = tansho_odds
+                pred["tansho_ev"] = round(ev, 2)
+                pred["tansho_recommended"] = ev > 0.1  # 10%+ edge
+            
+        # Find value bets
+        value_bets = []
+        for key, odds in odds_data.nirentan.items():
+            boats = key.split("-")
+            if len(boats) == 2:
+                b1, b2 = int(boats[0]), int(boats[1])
+                # Simple probability estimation
+                p1 = next((p["probability"] for p in predictions if p["boat_no"] == b1), 0)
+                p2 = next((p["probability"] for p in predictions if p["boat_no"] == b2), 0)
+                # Rough exacta probability
+                exacta_prob = p1 * p2 * 1.5  # Adjustment factor
+                if exacta_prob > 0 and odds > 0:
+                    ev = exacta_prob * odds - 1
+                    if ev > 0.2:  # 20%+ edge
+                        value_bets.append({
+                            "combination": key,
+                            "odds": odds,
+                            "estimated_prob": round(exacta_prob, 3),
+                            "ev": round(ev, 2)
+                        })
+        
+        value_bets.sort(key=lambda x: -x["ev"])
+        
+        base_result["odds"] = {
+            "tansho": odds_data.tansho,
+            "nirentan_sample": dict(list(odds_data.nirentan.items())[:10]),
+            "timestamp": odds_data.timestamp
+        }
+        base_result["value_bets"] = value_bets[:5]
+        
+    except Exception as e:
+        logger.warning(f"Failed to get odds: {e}")
+        base_result["odds_error"] = str(e)
+    
+    return base_result

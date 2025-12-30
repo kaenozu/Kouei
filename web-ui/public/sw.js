@@ -1,16 +1,14 @@
-// Service Worker for AI Kyotei PWA
-const CACHE_NAME = 'ai-kyotei-v1';
-const OFFLINE_URL = '/offline.html';
-
-// Assets to cache
+// Service Worker for Kouei PWA
+const CACHE_NAME = 'kouei-v2';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
-  '/manifest.json',
   '/offline.html',
+  '/manifest.json',
+  '/vite.svg'
 ];
 
-// Install event - cache static assets
+// Install - cache static assets
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
@@ -21,7 +19,7 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-// Activate event - clean old caches
+// Activate - clean old caches
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -35,98 +33,97 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch event - serve from cache, fallback to network
+// Fetch - network first, fallback to cache
 self.addEventListener('fetch', (event) => {
-  const { request } = event;
-  
   // Skip non-GET requests
-  if (request.method !== 'GET') return;
+  if (event.request.method !== 'GET') return;
   
-  // API requests - network first, no cache
-  if (request.url.includes('/api/')) {
-    event.respondWith(
-      fetch(request)
-        .then((response) => {
-          // Cache successful API responses briefly
-          if (response.ok) {
-            const responseClone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              // Only cache prediction results
-              if (request.url.includes('/api/prediction') || request.url.includes('/api/today')) {
-                cache.put(request, responseClone);
-              }
-            });
-          }
-          return response;
-        })
-        .catch(() => {
-          // Return cached API response if available
-          return caches.match(request);
-        })
-    );
+  // Skip API requests (always go to network)
+  if (event.request.url.includes('/api/')) {
     return;
   }
   
-  // Static assets - cache first, fallback to network
   event.respondWith(
-    caches.match(request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-      
-      return fetch(request)
-        .then((response) => {
-          // Cache successful responses
-          if (response.ok && response.type === 'basic') {
-            const responseClone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(request, responseClone);
-            });
+    fetch(event.request)
+      .then((response) => {
+        // Clone and cache successful responses
+        if (response.status === 200) {
+          const responseClone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseClone);
+          });
+        }
+        return response;
+      })
+      .catch(() => {
+        // Fallback to cache
+        return caches.match(event.request).then((response) => {
+          if (response) {
+            return response;
           }
-          return response;
-        })
-        .catch(() => {
-          // Return offline page for navigation requests
-          if (request.mode === 'navigate') {
-            return caches.match(OFFLINE_URL);
+          // If no cache, return offline page for navigation
+          if (event.request.mode === 'navigate') {
+            return caches.match('/offline.html');
           }
+          return new Response('Offline', { status: 503 });
         });
-    })
+      })
   );
 });
 
-// Push notifications
+// Push notification handler
 self.addEventListener('push', (event) => {
-  if (!event.data) return;
-  
-  const data = event.data.json();
+  const data = event.data ? event.data.json() : {};
   
   const options = {
-    body: data.body || '新しい予測が利用可能です',
+    body: data.body || '新しい高期待値レースが見つかりました',
     icon: '/icon-192.png',
-    badge: '/badge.png',
-    vibrate: [100, 50, 100],
+    badge: '/badge-72.png',
+    vibrate: [200, 100, 200],
+    tag: data.tag || 'race-alert',
+    renotify: true,
     data: {
-      url: data.url || '/',
+      url: data.url || '/'
     },
     actions: [
       { action: 'view', title: '詳細を見る' },
-      { action: 'close', title: '閉じる' },
-    ],
+      { action: 'dismiss', title: '閉じる' }
+    ]
   };
   
   event.waitUntil(
-    self.registration.showNotification(data.title || 'AI Kyotei', options)
+    self.registration.showNotification(data.title || '🎯 AI Kyotei', options)
   );
 });
 
-// Notification click
+// Notification click handler
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   
-  if (event.action === 'close') return;
-  
-  event.waitUntil(
-    clients.openWindow(event.notification.data.url || '/')
-  );
+  if (event.action === 'view' || !event.action) {
+    const url = event.notification.data?.url || '/';
+    event.waitUntil(
+      clients.matchAll({ type: 'window' }).then((clientList) => {
+        // Focus existing window or open new one
+        for (const client of clientList) {
+          if (client.url === url && 'focus' in client) {
+            return client.focus();
+          }
+        }
+        return clients.openWindow(url);
+      })
+    );
+  }
 });
+
+// Background sync for offline betting
+self.addEventListener('sync', (event) => {
+  if (event.tag === 'sync-predictions') {
+    event.waitUntil(syncPredictions());
+  }
+});
+
+async function syncPredictions() {
+  // Sync any pending predictions when back online
+  console.log('Syncing predictions...');
+}

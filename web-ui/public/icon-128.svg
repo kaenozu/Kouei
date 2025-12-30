@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <rect width="128" height="128" fill="#0a0a1a"/>
+  <circle cx="64" cy="64" r="51.2" fill="#00f2ff" opacity="0.2"/>
+  <text x="64" y="57" font-family="Arial, sans-serif" font-size="38" font-weight="bold" fill="#00f2ff" text-anchor="middle">AI</text>
+  <text x="64" y="89" font-family="Arial, sans-serif" font-size="19" fill="#ffffff" text-anchor="middle">競艇</text>
+</svg>

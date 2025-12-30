@@ -5,6 +5,7 @@ import WhatIfPanel from './components/WhatIfPanel';
 import { ToastContainer, useToast } from './components/Toast';
 import DatePicker from './components/DatePicker';
 import AnalyticsDashboard from './components/AnalyticsDashboard';
+import BacktestDashboard from './components/BacktestDashboard';
 
 const App = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -1001,7 +1002,7 @@ const App = () => {
           renderPortfolio()
         ) : activeTab === 'backtest' ? (
           <div style={{ padding: '1rem' }}>
-            {renderBacktestLab()}
+            <BacktestDashboard />
           </div>
         ) : activeTab === 'analytics' ? (
           <AnalyticsDashboard />

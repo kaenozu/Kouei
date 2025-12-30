@@ -19,6 +19,7 @@ from src.api.routers import (
     system_router,
 )
 from src.api.routers.analytics import router as analytics_router
+from src.api.routers.notifications import router as notifications_router
 from src.api.dependencies import get_predictor, get_dataframe
 from src.api.routers.system import broadcast_event, active_connections
 from src.api.routers.sync import run_sync, last_sync_time
@@ -83,6 +84,7 @@ app.include_router(betting_router)
 app.include_router(sync_router)
 app.include_router(system_router)
 app.include_router(analytics_router)
+app.include_router(notifications_router)
 
 # Include enhanced API router if available
 try:

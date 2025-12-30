@@ -1,5 +1,5 @@
 """System Router - Status and system endpoints"""
-from fastapi import APIRouter, Depends, BackgroundTasks, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Depends, BackgroundTasks, WebSocket, WebSocketDisconnect, Query
 from datetime import datetime
 import os
 import pandas as pd
@@ -149,3 +149,29 @@ async def visual_analysis_placeholder(data: dict):
         "status": "future_feature",
         "message": "Visual analysis is scheduled for future development."
     }
+
+
+@router.get("/backtest/history")
+async def get_backtest_history(days: int = Query(30, ge=1, le=90)):
+    """Get backtest history summary"""
+    from src.monitoring.auto_backtest import get_backtest_summary, load_backtest_history
+    
+    summary = get_backtest_summary(days)
+    history = load_backtest_history()
+    
+    return {
+        "summary": summary,
+        "history": history[-days:]
+    }
+
+
+@router.post("/backtest/run")
+async def trigger_backtest(
+    date: str = Query(None, pattern=r"^\d{8}$"),
+    background_tasks: BackgroundTasks = None
+):
+    """Trigger backtest for a specific date"""
+    from src.monitoring.auto_backtest import run_daily_backtest
+    
+    result = run_daily_backtest(date)
+    return result
