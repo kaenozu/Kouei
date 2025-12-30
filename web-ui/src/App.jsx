@@ -4,6 +4,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import WhatIfPanel from './components/WhatIfPanel';
 import { ToastContainer, useToast } from './components/Toast';
 import DatePicker from './components/DatePicker';
+import AnalyticsDashboard from './components/AnalyticsDashboard';
 
 const App = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -844,6 +845,9 @@ const App = () => {
           <div className={`nav-item ${activeTab === 'backtest' ? 'active' : ''}`} onClick={() => setActiveTab('backtest')}>
             <BarChart3 size={22} /> バックテスト・ラボ
           </div>
+          <div className={`nav-item ${activeTab === 'analytics' ? 'active' : ''}`} onClick={() => setActiveTab('analytics')}>
+            <TrendingUp size={22} /> 分析ダッシュボード
+          </div>
           <div className={`nav-item ${activeTab === 'racer' ? 'active' : ''}`} onClick={() => setActiveTab('racer')}>
             🏆 選手追跡
           </div>
@@ -999,6 +1003,8 @@ const App = () => {
           <div style={{ padding: '1rem' }}>
             {renderBacktestLab()}
           </div>
+        ) : activeTab === 'analytics' ? (
+          <AnalyticsDashboard />
         ) : activeTab === 'racer' ? (
           renderRacerTracker()
         ) : activeTab === 'tools' ? (
