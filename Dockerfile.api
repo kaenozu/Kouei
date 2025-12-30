@@ -1,0 +1,20 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install system dependencies (for lightgbm/xgboost build if needed)
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    curl \
+    libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+# Expose API ports
+EXPOSE 8000 8001
+
+CMD ["uvicorn", "src.api.main_api:app", "--host", "0.0.0.0", "--port", "8000"]

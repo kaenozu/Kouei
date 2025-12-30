@@ -1,0 +1,146 @@
+{
+    "01": {
+        "escape_rate": 0.0,
+        "in_strength": "Low",
+        "sample_size": 96,
+        "bias_score": -5.0
+    },
+    "02": {
+        "escape_rate": 0.0,
+        "in_strength": "Low",
+        "sample_size": 96,
+        "bias_score": -5.0
+    },
+    "03": {
+        "escape_rate": 0.0,
+        "in_strength": "Low",
+        "sample_size": 84,
+        "bias_score": -5.0
+    },
+    "04": {
+        "escape_rate": 0.0,
+        "in_strength": "Low",
+        "sample_size": 84,
+        "bias_score": -5.0
+    },
+    "05": {
+        "escape_rate": 0.0,
+        "in_strength": "Low",
+        "sample_size": 36,
+        "bias_score": -5.0
+    },
+    "06": {
+        "escape_rate": 0.0,
+        "in_strength": "Low",
+        "sample_size": 36,
+        "bias_score": -5.0
+    },
+    "07": {
+        "escape_rate": 0.0,
+        "in_strength": "Low",
+        "sample_size": 72,
+        "bias_score": -5.0
+    },
+    "08": {
+        "escape_rate": 0.0,
+        "in_strength": "Low",
+        "sample_size": 72,
+        "bias_score": -5.0
+    },
+    "09": {
+        "escape_rate": 0.0,
+        "in_strength": "Low",
+        "sample_size": 12,
+        "bias_score": -5.0
+    },
+    "10": {
+        "escape_rate": 0.0,
+        "in_strength": "Low",
+        "sample_size": 72,
+        "bias_score": -5.0
+    },
+    "11": {
+        "escape_rate": 0.0,
+        "in_strength": "Low",
+        "sample_size": 96,
+        "bias_score": -5.0
+    },
+    "12": {
+        "escape_rate": 0.0,
+        "in_strength": "Low",
+        "sample_size": 84,
+        "bias_score": -5.0
+    },
+    "13": {
+        "escape_rate": 0.0,
+        "in_strength": "Low",
+        "sample_size": 96,
+        "bias_score": -5.0
+    },
+    "14": {
+        "escape_rate": 0.0,
+        "in_strength": "Low",
+        "sample_size": 72,
+        "bias_score": -5.0
+    },
+    "15": {
+        "escape_rate": 0.0,
+        "in_strength": "Low",
+        "sample_size": 72,
+        "bias_score": -5.0
+    },
+    "16": {
+        "escape_rate": 0.0,
+        "in_strength": "Low",
+        "sample_size": 48,
+        "bias_score": -5.0
+    },
+    "17": {
+        "escape_rate": 0.0,
+        "in_strength": "Low",
+        "sample_size": 96,
+        "bias_score": -5.0
+    },
+    "18": {
+        "escape_rate": 0.0,
+        "in_strength": "Low",
+        "sample_size": 72,
+        "bias_score": -5.0
+    },
+    "19": {
+        "escape_rate": 0.0,
+        "in_strength": "Low",
+        "sample_size": 84,
+        "bias_score": -5.0
+    },
+    "20": {
+        "escape_rate": 0.0,
+        "in_strength": "Low",
+        "sample_size": 52,
+        "bias_score": -5.0
+    },
+    "21": {
+        "escape_rate": 0.0,
+        "in_strength": "Low",
+        "sample_size": 60,
+        "bias_score": -5.0
+    },
+    "22": {
+        "escape_rate": 0.0,
+        "in_strength": "Low",
+        "sample_size": 72,
+        "bias_score": -5.0
+    },
+    "23": {
+        "escape_rate": 0.0,
+        "in_strength": "Low",
+        "sample_size": 96,
+        "bias_score": -5.0
+    },
+    "24": {
+        "escape_rate": 0.0,
+        "in_strength": "Low",
+        "sample_size": 36,
+        "bias_score": -5.0
+    }
+}
