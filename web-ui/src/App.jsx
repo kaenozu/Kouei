@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { LayoutDashboard, TrendingUp, BarChart3, Settings, Info, CheckCircle2, Clock, Briefcase, Copy, Trophy, Star, Mic, MicOff, MessageSquare, Send, X, Box, Zap } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import WhatIfPanel from './components/WhatIfPanel';
+import { ToastContainer, useToast } from './components/Toast';
+import DatePicker from './components/DatePicker';
 
 const App = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -38,6 +40,7 @@ const App = () => {
   const [chatInput, setChatInput] = useState('');
   const [chatHistory, setChatHistory] = useState([{ role: 'ai', content: 'こんにちは！AIコンシェルジュです。今日のレースについて何かお手伝いしましょうか？' }]);
   const [show3D, setShow3D] = useState(false);
+  const { toasts, addToast, removeToast } = useToast();
 
   const fetchPrediction = async () => {
     setLoading(true);
@@ -92,14 +95,14 @@ const App = () => {
       const resp = await fetch(`http://localhost:8001/api/fetch?date=${params.date}`, { method: 'POST' });
       const data = await resp.json();
       if (data.status === 'success') {
-        alert("データの取得と更新が完了しました。");
+        addToast("データの取得と更新が完了しました", "success");
         fetchPrediction();
         fetchStatus();
       } else {
-        alert("エラーが発生しました: " + data.message);
+        addToast("エラーが発生しました: " + data.message, "error");
       }
     } catch (e) {
-      alert("通信エラーが発生しました。");
+      addToast("通信エラーが発生しました", "error");
     }
     setFetching(false);
   };
@@ -160,7 +163,7 @@ const App = () => {
       const resp = await fetch('http://localhost:8001/api/concierge/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: json.stringify({ query: chatInput })
+        body: JSON.stringify({ query: chatInput })
       });
       const data = await resp.json();
       setChatHistory(prev => [...prev, { role: 'ai', content: data.answer }]);
@@ -266,8 +269,8 @@ const App = () => {
     setOptimizing(true);
     try {
       await fetch('http://localhost:8001/api/optimize', { method: 'POST' });
-      alert("最適化を開始しました。完了までお待ちください。");
-    } catch (e) { alert("エラーが発生しました"); }
+      addToast("最適化を開始しました", "info");
+    } catch (e) { addToast("エラーが発生しました", "error"); }
     setOptimizing(false);
   };
 
@@ -276,10 +279,10 @@ const App = () => {
     setDiscovering(true);
     try {
       await fetch('http://localhost:8001/api/strategy/discover', { method: 'POST' });
-      alert("発掘を開始しました。数分後にリロードして結果を確認してください。");
+      addToast("発掘を開始しました", "info");
       // Poll for update?
       setTimeout(fetchStrategies, 10000);
-    } catch (e) { alert("エラーが発生しました"); }
+    } catch (e) { addToast("エラーが発生しました", "error"); }
     setDiscovering(false);
   };
 
@@ -762,6 +765,61 @@ const App = () => {
         >
           予測を確認する
         </button>
+      </div>
+    </div>
+  );
+
+  const renderSettings = () => (
+    <div style={{ padding: '1rem', maxWidth: '800px', margin: '0 auto' }}>
+      <h1 style={{ fontSize: '2.5rem', fontWeight: '900', marginBottom: '0.5rem' }}>⚙️ Settings</h1>
+      <p style={{ color: 'var(--text-dim)', marginBottom: '2rem' }}>システム設定</p>
+
+      <div className="card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
+        <h3 style={{ marginBottom: '1rem' }}>通知設定</h3>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <input type="checkbox" defaultChecked />
+            <span>高確率レース通知を受け取る</span>
+          </label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <input type="checkbox" defaultChecked />
+            <span>戦略アラートを受け取る</span>
+          </label>
+        </div>
+      </div>
+
+      <div className="card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
+        <h3 style={{ marginBottom: '1rem' }}>モデル設定</h3>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div>
+            <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: '600', marginBottom: '0.5rem' }}>
+              通知閾値 (確率)
+            </label>
+            <input type="range" min="0.3" max="0.7" step="0.05" defaultValue="0.5" style={{ width: '100%' }} />
+          </div>
+          <button className="btn-primary" onClick={triggerOptimization} disabled={optimizing} style={{ width: 'fit-content' }}>
+            {optimizing ? '最適化中...' : 'ハイパーパラメータ最適化'}
+          </button>
+          <button className="btn-primary" onClick={triggerDiscovery} disabled={discovering} style={{ width: 'fit-content', background: 'var(--secondary)' }}>
+            {discovering ? '発掘中...' : 'お宝条件を発掘'}
+          </button>
+        </div>
+      </div>
+
+      <div className="card" style={{ padding: '1.5rem' }}>
+        <h3 style={{ marginBottom: '1rem' }}>アクティブ戦略</h3>
+        {strategies.length === 0 ? (
+          <p style={{ color: 'var(--text-dim)' }}>戦略が登録されていません</p>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            {strategies.map((s, i) => (
+              <div key={i} style={{ padding: '0.75rem', background: 'var(--glass-highlight)', borderRadius: '8px', display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ fontWeight: '700' }}>{s.display_name || s.name}</span>
+                <span style={{ color: s.stats?.roi > 100 ? 'var(--success)' : 'var(--error)' }}>ROI: {s.stats?.roi?.toFixed(1)}%</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -1365,7 +1423,8 @@ const App = () => {
             </div>
           )}
         </div>
-      </main >
+      </main>
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
     </div >
   );
 };

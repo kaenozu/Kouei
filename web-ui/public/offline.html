@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>オフライン - AI Kyotei</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+    }
+    .container {
+      text-align: center;
+      padding: 2rem;
+    }
+    .icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+    }
+    h1 {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    p {
+      color: #888;
+      margin-bottom: 2rem;
+    }
+    button {
+      padding: 1rem 2rem;
+      font-size: 1rem;
+      background: linear-gradient(135deg, #00f2ff, #00d4aa);
+      border: none;
+      border-radius: 12px;
+      color: #000;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button:hover {
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="icon">📡</div>
+    <h1>オフラインです</h1>
+    <p>インターネット接続を確認してください</p>
+    <button onclick="location.reload()">再読み込み</button>
+  </div>
+</body>
+</html>

@@ -1,12 +1,37 @@
-FROM node:18-alpine
+# Multi-stage build for web frontend
+
+# Stage 1: Build
+FROM node:20-alpine as builder
 
 WORKDIR /app
 
+# Copy package files
 COPY web-ui/package*.json ./
-RUN npm install
 
-COPY web-ui/ .
+# Install dependencies
+RUN npm ci --silent
+
+# Copy source code
+COPY web-ui/ ./
+
+# Build for production
+RUN npm run build
+
+# Stage 2: Production server
+FROM node:20-alpine as runtime
+
+WORKDIR /app
+
+# Install serve for static file serving
+RUN npm install -g serve
+
+# Copy built files
+COPY --from=builder /app/dist ./dist
+
+# Create non-root user
+RUN adduser -D appuser && chown -R appuser:appuser /app
+USER appuser
 
 EXPOSE 5173
 
-CMD ["npm", "run", "dev", "--", "--host"]
+CMD ["serve", "-s", "dist", "-l", "5173"]

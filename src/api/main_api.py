@@ -14,9 +14,16 @@ from src.collector.downloader import Downloader
 from src.crawler.downloader_async import AsyncDownloader
 from src.parser.odds_parser import OddsParser
 import asyncio
-import torch
+try:
+    import torch
+    TORCH_AVAILABLE = True
+except ImportError:
+    TORCH_AVAILABLE = False
 from src.model.train_model import train_model
-from src.model.optimize_params import run_optimization
+try:
+    from src.model.optimize_params import run_optimization
+except ImportError:
+    run_optimization = None
 from src.strategy.finder import find_strategies
 from src.portfolio.ledger import PortfolioLedger
 from src.inference.commentary import CommentaryGenerator
@@ -45,7 +52,20 @@ venue_scorer = VenueScorer()
 # WebSocket connections
 active_connections: list[WebSocket] = []
 
-app = FastAPI(title="Kyotei AI API")
+app = FastAPI(
+    title="Kyotei AI API",
+    description="AI-powered boat race prediction system",
+    version="2.0.0",
+    docs_url="/docs",
+    redoc_url="/redoc"
+)
+
+# Include enhanced API router
+try:
+    from src.api.enhanced_api import router as enhanced_router
+    app.include_router(enhanced_router)
+except ImportError as e:
+    print(f"Warning: Enhanced API not loaded: {e}")
 
 # Enable CORS for frontend development
 app.add_middleware(
@@ -105,7 +125,7 @@ async def get_status():
         "last_sync": last_sync_time.isoformat() if last_sync_time else None,
         "sync_running": sync_lock,
         "changelog_ready": os.path.exists("CHANGELOG.md"),
-        "hardware_accel": "CUDA/GPU" if torch.cuda.is_available() else "CPU"
+        "hardware_accel": "CUDA/GPU" if TORCH_AVAILABLE and torch.cuda.is_available() else "CPU"
     }
 
 @app.post("/api/simulate-what-if")

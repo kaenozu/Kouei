@@ -2,7 +2,11 @@ import pandas as pd
 import lightgbm as lgb
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, roc_auc_score
-import matplotlib.pyplot as plt
+try:
+    import matplotlib.pyplot as plt
+    PLT_AVAILABLE = True
+except ImportError:
+    PLT_AVAILABLE = False
 import os
 import json
 from src.features.preprocessing import preprocess, FEATURES, CAT_FEATURES
