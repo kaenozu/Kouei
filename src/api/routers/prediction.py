@@ -280,8 +280,8 @@ async def get_prediction_with_odds(
     
     cache_key = f"pred_odds:{date}:{jyo}:{race}"
     
-    # Get base prediction
-    base_result = await get_prediction(date, jyo, race, predictor, cache)
+    # Get base prediction (call the endpoint function directly)
+    base_result = await get_prediction(date=date, jyo=jyo, race=race, cache=cache)
     
     if "error" in base_result:
         return base_result
