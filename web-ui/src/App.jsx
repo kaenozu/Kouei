@@ -68,7 +68,7 @@ const App = () => {
       const resp = await fetch('http://localhost:8001/api/simulate-what-if', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: json.stringify({ modifications: modifiedFeatures })
+        body: JSON.stringify({ modifications: modifiedFeatures })
       });
       const data = await resp.json();
       if (data.status === 'success') {
@@ -224,7 +224,6 @@ const App = () => {
     fetchTodayRaces();
     // Refresh today's races every 2 minutes
     const interval = setInterval(fetchTodayRaces, 120000);
-    return () => clearInterval(interval);
     return () => clearInterval(interval);
   }, []);
 

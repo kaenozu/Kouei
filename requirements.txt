@@ -1,3 +1,4 @@
+# Core
 requests
 beautifulsoup4
 pandas
@@ -5,3 +6,18 @@ lightgbm
 scikit-learn
 tqdm
 lxml
+
+# API
+fastapi
+uvicorn[standard]
+pydantic
+
+# Async
+aiohttp
+
+# Cache
+redis
+
+# ML/Deep Learning (optional)
+torch
+onnxruntime

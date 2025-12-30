@@ -37,7 +37,7 @@ def preprocess(df, is_training=False):
     # In training we use the global mean, in inference we should ideally use the race average 
     # but as a fallback we use a typical value or global mean.
     if 'exhibition_time' in df.columns:
-        df['exhibition_time'] = df['exhibition_time'].fillna(df['exhibition_time'].mean() if training else 6.80)
+        df['exhibition_time'] = df['exhibition_time'].fillna(df['exhibition_time'].mean() if is_training else 6.80)
     
     df[numeric_cols] = df[numeric_cols].fillna(0)
     
@@ -61,7 +61,7 @@ def preprocess(df, is_training=False):
         df['weather'] = -1
 
     # Target (only for training)
-    if training and 'rank' in df.columns:
+    if is_training and 'rank' in df.columns:
         df['rank'] = pd.to_numeric(df['rank'], errors='coerce')
         df['target'] = (df['rank'] == 1).astype(int)
         # Filter out rows where rank is NaN

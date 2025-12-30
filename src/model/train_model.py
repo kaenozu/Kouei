@@ -18,7 +18,7 @@ def train_model():
     df = pd.read_csv(data_path)
     print(f"Loaded {len(df)} rows.")
     
-    df = preprocess(df, training=True)
+    df = preprocess(df, is_training=True)
     print(f"Post-preprocessing: {len(df)} rows.")
     
     # Features and Labels

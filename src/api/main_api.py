@@ -15,7 +15,6 @@ from src.crawler.downloader_async import AsyncDownloader
 from src.parser.odds_parser import OddsParser
 import asyncio
 import torch
-from src.parser.odds_parser import OddsParser
 from src.model.train_model import train_model
 from src.model.optimize_params import run_optimization
 from src.strategy.finder import find_strategies
@@ -341,6 +340,7 @@ def check_and_notify_high_prob_races():
                     msg += format_race_message(today_str, stadium_name, race, top_3.to_dict('records'))
                     
                     # Add AI Commentary
+                    top_boat = top_3.iloc[0]
                     commentary = commentary_gen.generate(top_boat, top_boat['boat_no'])
                     msg += f"\n🗣️ **AI解説**: {commentary}"
 
@@ -351,7 +351,6 @@ def check_and_notify_high_prob_races():
                         # Auto-Record Bet to Portfolio
                         # Assume we bet on Top 1 Prediction (Tansho) or Top 1-2 (2ren)?
                         # For simplicity, let's bet 1000 yen on Tansho of Top 1
-                        top_boat = top_3.iloc[0]
                         # Need odds. Fetching here might be slow. 
                         # Ideally we fetch odds. For now, assume a placeholder or fetch.
                         # We can use downloader to get odds quickly?
@@ -737,8 +736,7 @@ async def get_prediction(date: str, jyo: str, race: int):
             "predictions": sorted_results,
             "tips": tips_with_ev,
             "confidence": confidence,
-            "insights": ai_insights,
-            "legacy_insights": insights[:2]
+            "insights": ai_insights
         }
     except Exception as e:
         import traceback
@@ -965,99 +963,8 @@ async def run_sniper_cycle(now):
     except Exception as e:
         print(f"Sniper Cycle Error: {e}")
 
-async def old_sniper_loop_marker():
-    pass
-    """Checks for approaching deadlines every 60 seconds"""
-    print("🎯 Sniper Mode Activated")
-    while True:
-        try:
-            now = datetime.now()
-            # 1. Get Today's Races
-            downloader = Downloader() # Helper to get URL list? Or just load DB?
-            # Ideally load from 'data/processed/race_data.csv' or the raw collected files
-            # But we need live schedule.
-            # Simplest: Check 'notified_races' or just iterate known schedule.
-            
-            # Let's iterate all stadiums for today
-            date_str = now.strftime('%Y%m%d')
-            strategies = []
-            if os.path.exists("config/strategies.json"):
-                with open("config/strategies.json", 'r', encoding='utf-8') as f:
-                    strategies = json.load(f)
-
-            if not strategies: 
-                await asyncio.sleep(60)
-                continue
-
-            # We need to know deadlines. 
-            # We can download today's schedule once and cache it in memory?
-            # For simplicity, we just look at what we have in race_data.csv (assuming run_sync updated it)
-            # OR we fetch the "Index" page for today to get times.
-            
-            # Let's use the 'AsyncDownloader' to quickly check all 24 Jyo Index pages?
-            # No, index page doesn't show exact deadline (only start time).
-            # Start time ~ Deadline.
-            
-            # Implementation:
-            # 1. Load latest race_data
-            if os.path.exists(DATA_PATH):
-                df = pd.read_csv(DATA_PATH)
-                today_df = df[df['date'].astype(str).str.replace('-','') == date_str]
-                
-                for (jyo, race), group in today_df.groupby(['jyo_cd', 'race_no']):
-                     # Check time
-                    if 'start_time' not in group.columns: continue
-                    start_time_str = group['start_time'].iloc[0] # HH:MM
-                    
-                    try:
-                        st_dt = datetime.strptime(f"{date_str} {start_time_str}", "%Y%m%d %H:%M")
-                        diff = (st_dt - now).total_seconds()
-                        
-                        # 300s = 5 min. Window: 4min to 6min (to ensure we hit it once)
-                        if 240 <= diff <= 360:
-                            race_key = f"SNIPER_{date_str}_{jyo}_{race}"
-                            if race_key in notified_races: continue
-                            
-                            # Fetch Odds Async
-                            print(f"🎯 Sniper Check: {jyo} {race}R (Time: {start_time_str})")
-                            async_dl = AsyncDownloader()
-                            # URL for odds
-                            url = downloader.get_odds2n_url(date_str, str(jyo).zfill(2), race)
-                            html = await async_dl.fetch_page(aiohttp.ClientSession(), url) # Need session management
-                            
-                            if html:
-                                # Parse Odds
-                                odds_map = OddsParser.parse_3rentan(html) # Use 3ren for whale
-                                
-                                # Whale Watcher
-                                alerts = whale_detector.detect_abnormal_drop(race_key, odds_map)
-                                if alerts:
-                                    w_msg = f"🐋 **WHALE ALERT** (大口投票検知)\n会場: {jyo} {race}R\n"
-                                    for a in alerts:
-                                        w_msg += f"- {a['combo']}: {a['prev']}倍 -> {a['curr']}倍 (🔻{a['drop_pct']:.1f}%)\n"
-                                    
-                                    print("Sending Whale Alert")
-                                    # Send separate notification or combine?
-                                    webhook_url = load_config().discord_webhook_url
-                                    if webhook_url:
-                                        send_discord_notification(webhook_url, w_msg)
-
-                                # Re-eval strategies (Stub)
-                                # ...
-                                
-                                # Notify Sniper (Stub - kept original logic if implemented)
-                                msg = f"🎯 **SNIPER ALERT** (直前5分)\n会場: {jyo} {race}R\n締切間近！オッズを確認してください！"
-                                webhook_url = load_config().discord_webhook_url
-                                if webhook_url and send_discord_notification(webhook_url, msg):
-                                    notified_races.add(race_key)
-
-                    except Exception as e:
-                        pass
-                        
-            await asyncio.sleep(60)
-        except Exception as e:
-            print(f"Sniper Error: {e}")
-            await asyncio.sleep(60)
+# NOTE: old_sniper_loop_marker was removed (dead code)
+# Sniper logic is now integrated into unified_streaming_pipeline()
 
 if __name__ == "__main__":
     import uvicorn
