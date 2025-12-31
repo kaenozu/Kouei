@@ -238,11 +238,15 @@ const App = () => {
     fetchPortfolio();
 
     // WebSocket connection for real-time notifications
-    const ws = new WebSocket('ws://localhost:8001/ws');
+    const ws = new WebSocket('ws://localhost:8001/api/ws/test5');
+    ws.onopen = () => console.log('WebSocket connected');
+    ws.onclose = () => console.log('WebSocket disconnected');
+    ws.onerror = (error) => console.error('WebSocket error', error);
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
         setNotifications(prev => [data, ...prev].slice(0, 5));
+        console.log('WebSocket message received', data);
       } catch (e) {
         console.error('WS Error', e);
       }

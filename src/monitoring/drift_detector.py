@@ -9,9 +9,11 @@ from scipy.stats import ks_2samp
 import os
 import json
 from datetime import datetime
+import asyncio
 
 DATA_PATH = "data/processed/race_data.csv"
 BASELINE_STATS_PATH = "models/baseline_stats.json"
+DRIFT_HISTORY_PATH = "data/drift_history.json"
 
 class DriftDetector:
     def __init__(self, data_path=DATA_PATH):
@@ -70,16 +72,53 @@ class DriftDetector:
                 
                 results[feat] = {
                     "p_value": float(p_value),
-                    "drift": bool(p_value < threshold)
+                    "drift": bool(p_value < threshold),
+                    "statistic": float(statistic)
                 }
                 if p_value < threshold:
                     drift_detected = True
         
-        return {
+        report = {
             "timestamp": datetime.now().isoformat(),
             "drift_detected": bool(drift_detected),
             "metrics": results
         }
+        
+        # Save to history
+        self._save_to_history(report)
+        
+        return report
+    
+    def _save_to_history(self, report):
+        """Save drift report to history"""
+        history = []
+        if os.path.exists(DRIFT_HISTORY_PATH):
+            try:
+                with open(DRIFT_HISTORY_PATH, "r") as f:
+                    history = json.load(f)
+            except:
+                pass
+        
+        history.append(report)
+        
+        # Keep only last 100 reports
+        if len(history) > 100:
+            history = history[-100:]
+        
+        with open(DRIFT_HISTORY_PATH, "w") as f:
+            json.dump(history, f, indent=2)
+    
+    def get_drift_history(self, limit=30):
+        """Get drift history"""
+        if not os.path.exists(DRIFT_HISTORY_PATH):
+            return []
+        
+        try:
+            with open(DRIFT_HISTORY_PATH, "r") as f:
+                history = json.load(f)
+            return history[-limit:]
+        except:
+            return []
 
 if __name__ == "__main__":
     detector = DriftDetector()

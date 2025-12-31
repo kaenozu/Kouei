@@ -1,7 +1,9 @@
 """Analysis Router - Racer tracking and analysis endpoints"""
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Request
 from typing import Optional
 import pandas as pd
+import json
+import numpy as np
 
 from src.api.dependencies import (
     get_racer_tracker, get_cache, get_dataframe, get_vector_db
@@ -29,8 +31,40 @@ async def get_racer_stats(
         return cached
     
     stats = racer_tracker.get_racer_stats(racer_id, n_races)
-    cache.set(cache_key, stats, ttl=600)  # 10 min cache
-    return stats
+    
+    # Ensure all float values are JSON compliant
+    def make_json_safe(obj):
+        if isinstance(obj, dict):
+            return {k: make_json_safe(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [make_json_safe(item) for item in obj]
+        elif isinstance(obj, float) and (np.isnan(obj) or np.isinf(obj)):
+            return None
+        elif pd.isna(obj):
+            return None
+        else:
+            return obj
+    
+    # Additional check for any remaining NaN values
+    def deep_check_nan(obj):
+        if isinstance(obj, dict):
+            new_obj = {}
+            for k, v in obj.items():
+                new_obj[k] = deep_check_nan(v)
+            return new_obj
+        elif isinstance(obj, list):
+            return [deep_check_nan(item) for item in obj]
+        elif isinstance(obj, float) and (math.isnan(obj) or math.isinf(obj)):
+            return None
+        else:
+            return obj
+    
+    safe_stats = make_json_safe(stats)
+    # Additional deep check for any remaining NaN values
+    import math
+    safe_stats = deep_check_nan(safe_stats)
+    cache.set(cache_key, safe_stats, ttl=600)  # 10 min cache
+    return safe_stats
 
 
 @router.get("/compatibility")

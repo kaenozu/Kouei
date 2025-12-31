@@ -6,6 +6,9 @@ from datetime import datetime
 from tqdm import tqdm
 import warnings
 from bs4 import XMLParsedAsHTMLWarning
+import concurrent.futures
+from typing import List, Tuple, Optional
+
 warnings.filterwarnings("ignore", category=XMLParsedAsHTMLWarning)
 
 from src.parser.html_parser import ProgramParser, ResultParser, BeforeInfoParser
@@ -36,26 +39,37 @@ def get_file_hash(path):
     return None
 
 
-def process_single_race(stadium_dir, date_str, jyo_cd, race_no):
-    """Process a single race and return dataframes"""
+def _process_single_race_parallel(args):
+    """Process a single race in parallel"""
+    stadium_dir, date_str, jyo_cd, race_no = args
+    
     program_df = None
     before_df = None
     result_df = None
     
     program_path = os.path.join(stadium_dir, f"program_{race_no}.html")
     if os.path.exists(program_path):
-        with open(program_path, 'r', encoding='utf-8') as f:
-            program_df = ProgramParser.parse(f.read(), date_str, jyo_cd, int(race_no))
+        try:
+            with open(program_path, 'r', encoding='utf-8') as f:
+                program_df = ProgramParser.parse(f.read(), date_str, jyo_cd, int(race_no))
+        except Exception as e:
+            print(f"Error parsing program for {date_str} {jyo_cd} R{race_no}: {e}")
     
     before_path = os.path.join(stadium_dir, f"beforeinfo_{race_no}.html")
     if os.path.exists(before_path):
-        with open(before_path, 'r', encoding='utf-8') as f:
-            before_df = BeforeInfoParser.parse(f.read(), date_str, jyo_cd, int(race_no))
+        try:
+            with open(before_path, 'r', encoding='utf-8') as f:
+                before_df = BeforeInfoParser.parse(f.read(), date_str, jyo_cd, int(race_no))
+        except Exception as e:
+            print(f"Error parsing beforeinfo for {date_str} {jyo_cd} R{race_no}: {e}")
     
     result_path = os.path.join(stadium_dir, f"result_{race_no}.html")
     if os.path.exists(result_path):
-        with open(result_path, 'r', encoding='utf-8') as f:
-            result_df = ResultParser.parse(f.read(), date_str, jyo_cd, int(race_no))
+        try:
+            with open(result_path, 'r', encoding='utf-8') as f:
+                result_df = ResultParser.parse(f.read(), date_str, jyo_cd, int(race_no))
+        except Exception as e:
+            print(f"Error parsing result for {date_str} {jyo_cd} R{race_no}: {e}")
     
     return program_df, before_df, result_df
 
@@ -81,6 +95,7 @@ def build_dataset_incremental(raw_dir="data/raw", output_path="data/processed/ra
     new_beforeinfo = []
     new_results = []
     changed_keys = set()
+    race_tasks = []  # Collect tasks for parallel processing
     
     for date_str in tqdm(dates, desc="Scanning dates"):
         date_dir = os.path.join(raw_dir, date_str)
@@ -114,16 +129,8 @@ def build_dataset_incremental(raw_dir="data/raw", output_path="data/processed/ra
                 
                 if needs_processing:
                     changed_keys.add(key)
-                    program_df, before_df, result_df = process_single_race(
-                        stadium_dir, date_str, jyo_cd, race_no
-                    )
-                    
-                    if program_df is not None:
-                        new_programs.append(program_df)
-                    if before_df is not None:
-                        new_beforeinfo.append(before_df)
-                    if result_df is not None:
-                        new_results.append(result_df)
+                    # Collect task for parallel processing
+                    race_tasks.append((stadium_dir, date_str, jyo_cd, race_no))
                     
                     # Update metadata
                     processed_files[key] = current_hashes
@@ -132,7 +139,21 @@ def build_dataset_incremental(raw_dir="data/raw", output_path="data/processed/ra
         print("No changes detected. Dataset is up to date.")
         return
     
-    print(f"Processing {len(changed_keys)} changed races...")
+    print(f"Processing {len(changed_keys)} changed races with {min(4, len(race_tasks))} workers...")
+    
+    # Process races in parallel
+    with concurrent.futures.ThreadPoolExecutor(max_workers=min(4, len(race_tasks))) as executor:
+        results = list(tqdm(executor.map(_process_single_race_parallel, race_tasks), 
+                           total=len(race_tasks), desc="Processing Races"))
+    
+    # Collect results
+    for program_df, before_df, result_df in results:
+        if program_df is not None:
+            new_programs.append(program_df)
+        if before_df is not None:
+            new_beforeinfo.append(before_df)
+        if result_df is not None:
+            new_results.append(result_df)
     
     # Build new data
     if new_programs:

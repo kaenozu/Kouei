@@ -13,9 +13,8 @@ class DatabaseData:
         self.init_db()
 
     def get_conn(self):
-        if not self.conn:
-            self.conn = sqlite3.connect(self.db_path)
-        return self.conn
+        # Create new connection for each call to ensure thread safety
+        return sqlite3.connect(self.db_path)
 
     def init_db(self):
         conn = self.get_conn()

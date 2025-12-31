@@ -92,6 +92,12 @@ class VectorDBManager:
         for i in top_indices:
             meta = self.metadata[i].copy()
             meta['similarity_score'] = float(1 / (1 + dists[i]))
+            # Replace any NaN/inf values with None to ensure JSON compliance
+            for key, value in meta.items():
+                if isinstance(value, float) and (np.isnan(value) or np.isinf(value)):
+                    meta[key] = None
+                elif pd.isna(value):
+                    meta[key] = None
             results.append(meta)
             
         return results

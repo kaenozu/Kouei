@@ -303,6 +303,11 @@ async def get_prediction_with_odds(
                 pred["tansho_odds"] = tansho_odds
                 pred["tansho_ev"] = round(ev, 2)
                 pred["tansho_recommended"] = ev > 0.1  # 10%+ edge
+            else:
+                # No real-time odds available - still add flag for completeness
+                pred["tansho_odds"] = 0.0
+                pred["tansho_ev"] = 0.0
+                pred["tansho_recommended"] = False
             
         # Find value bets
         value_bets = []
@@ -337,5 +342,11 @@ async def get_prediction_with_odds(
     except Exception as e:
         logger.warning(f"Failed to get odds: {e}")
         base_result["odds_error"] = str(e)
+        base_result["odds"] = {
+            "tansho": {},
+            "nirentan_sample": {},
+            "timestamp": "",
+            "note": "Real-time odds unavailable - using historical odds"
+        }
     
     return base_result

@@ -3,7 +3,7 @@ Kouei API - AI-powered boat race prediction system
 
 Refactored modular API with separated routers for better maintainability.
 """
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import asyncio
@@ -18,11 +18,17 @@ from src.api.routers import (
     sync_router,
     system_router,
 )
+try:
+    from src.api.routers.advanced import router as advanced_router
+except ImportError:
+    advanced_router = None
 from src.api.routers.analytics import router as analytics_router
 from src.api.routers.notifications import router as notifications_router
 from src.api.dependencies import get_predictor, get_dataframe
 from src.api.routers.system import broadcast_event, active_connections
 from src.api.routers.sync import run_sync, last_sync_time
+from bs4 import BeautifulSoup
+import aiohttp
 from src.monitoring.drift_detector import DriftDetector
 from src.analysis.venue_scoring import VenueScorer
 from src.utils.logger import logger
@@ -85,6 +91,8 @@ app.include_router(sync_router)
 app.include_router(system_router)
 app.include_router(analytics_router)
 app.include_router(notifications_router)
+if advanced_router:
+    app.include_router(advanced_router)
 
 # Include enhanced API router if available
 try:
@@ -131,6 +139,13 @@ async def unified_streaming_pipeline():
                 if drift_report.get("drift_detected"):
                     await broadcast_event("DRIFT_ALERT", drift_report)
             
+            # 4. Hourly Drift Check (more frequent)
+            elif now.minute == 0:  # Check every hour
+                logger.info("🔍 Pipeline: Hourly Drift Check")
+                drift_report = drift_detector.check_drift(threshold=0.1)  # More sensitive
+                if drift_report.get("drift_detected"):
+                    await broadcast_event("DRIFT_ALERT_SENSITIVE", drift_report)
+            
             await asyncio.sleep(60)
             
         except asyncio.CancelledError:
@@ -166,8 +181,21 @@ async def run_sniper_cycle(now: datetime, notified_races: set):
                     st_dt = datetime.strptime(f"{date_str} {start_time_str}", "%Y%m%d %H:%M")
                     diff = (st_dt - now).total_seconds()
                     
+                    # High-frequency alert 10 minutes before race
+                    if 540 <= diff <= 600:  # 9-10 minutes before
+                        race_key = f"SNIPER_PRE_{date_str}_{jyo}_{race}"
+                        if race_key not in notified_races:
+                            logger.info(f"🎯 Sniper Pre-Alert: {jyo} R{race}")
+                            notified_races.add(race_key)
+                            await broadcast_event("SNIPER_PRE_ALERT", {
+                                "jyo": str(jyo),
+                                "race": int(race),
+                                "time": str(start_time_str),
+                                "minutes_until": 10
+                            })
+                    
                     # Alert 4-6 minutes before race
-                    if 240 <= diff <= 360:
+                    elif 240 <= diff <= 360:  # 4-6 minutes before
                         race_key = f"SNIPER_{date_str}_{jyo}_{race}"
                         if race_key not in notified_races:
                             logger.info(f"🎯 Sniper: Target detected {jyo} R{race}")
@@ -175,9 +203,29 @@ async def run_sniper_cycle(now: datetime, notified_races: set):
                             await broadcast_event("SNIPER_ALERT", {
                                 "jyo": str(jyo),
                                 "race": int(race),
+                                "time": str(start_time_str),
+                                "minutes_until": 5
+                            })
+                    
+                    # Final alert 1 minute before race
+                    elif 30 <= diff <= 60:  # 1 minute before
+                        race_key = f"SNIPER_FINAL_{date_str}_{jyo}_{race}"
+                        if race_key not in notified_races:
+                            logger.info(f"🎯 Sniper Final Alert: {jyo} R{race}")
+                            notified_races.add(race_key)
+                            await broadcast_event("SNIPER_FINAL_ALERT", {
+                                "jyo": str(jyo),
+                                "race": int(race),
+                                "time": str(start_time_str),
+                                "seconds_until": int(diff)
+                            })
+                            await broadcast_event("SNIPER_ALERT", {
+                                "jyo": str(jyo),
+                                "race": int(race),
                                 "time": str(start_time_str)
                             })
-                except:
+                except Exception as e:
+                    logger.error(f"Sniper time parsing error: {e}")
                     pass
                     
     except Exception as e:
