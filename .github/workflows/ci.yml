@@ -16,7 +16,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.12'
           cache: 'pip'
       
       - name: Install dependencies
@@ -40,7 +40,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.12'
           cache: 'pip'
       
       - name: Install dependencies
@@ -48,13 +48,19 @@ jobs:
       
       - name: Run tests with coverage
         run: |
-          pytest tests/ -v --cov=src --cov-report=xml --cov-report=term-missing
+          pytest tests/ -v --cov=src --cov-report=xml --cov-report=term-missing --cov-report=html
       
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
           file: ./coverage.xml
           fail_ci_if_error: false
+      
+      - name: Archive coverage results
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report
+          path: htmlcov/
 
   test-frontend:
     name: Frontend Tests
@@ -92,23 +98,53 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       
-      - name: Build API image
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+        
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta-api
+        uses: docker/metadata-action@v5
+        with:
+          images: kouei/kouei-api
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+      
+      - name: Extract metadata (tags, labels) for Web
+        id: meta-web
+        uses: docker/metadata-action@v5
+        with:
+          images: kouei/kouei-web
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+      
+      - name: Build and push API image
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./Dockerfile.api
-          push: false
-          tags: kouei-api:latest
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta-api.outputs.tags }}
+          labels: ${{ steps.meta-api.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
       
-      - name: Build Web image
+      - name: Build and push Web image
         uses: docker/build-push-action@v5
         with:
           context: ./web-ui
           file: ./Dockerfile.web
-          push: false
-          tags: kouei-web:latest
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta-web.outputs.tags }}
+          labels: ${{ steps.meta-web.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -119,10 +155,26 @@ jobs:
     if: github.ref == 'refs/heads/main'
     environment: production
     steps:
-      - name: Deploy notification
-        run: echo "Ready for deployment"
+      - name: Deploy to production
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.PRIVATE_KEY }}
+          port: ${{ secrets.PORT }}
+          script: |
+            cd /home/exedev/Kouei
+            docker-compose pull
+            docker-compose up -d
+            docker image prune -f
       
-      # Add actual deployment steps here
-      # - SSH to server
-      # - Pull latest images
-      # - docker-compose up -d
+      - name: Send deployment notification
+        uses: ravsamhq/notify-slack-action@v2
+        if: always()
+        with:
+          status: ${{ job.status }}
+          notification_title: "Deployment ${{ job.status }}"
+          message_format: "{emoji} *${{ github.workflow }}* ${workflow_url} in *${{ github.repository }}*"
+          footer: "Deployed by ${{ github.actor }}"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

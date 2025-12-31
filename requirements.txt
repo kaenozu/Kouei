@@ -50,3 +50,14 @@ anthropic>=0.18.0,<1.0.0
 
 # Websocket
 websockets>=12.0,<13.0
+
+# 追加パッケージ
+schedule==1.2.0
+sentence-transformers==2.2.2
+aiohttp==3.9.1
+beautifulsoup4==4.12.2
+numpy==1.24.3
+pandas==2.0.3
+scikit-learn==1.3.0
+joblib==1.3.2
+asyncio

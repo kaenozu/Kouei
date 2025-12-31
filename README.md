@@ -6,6 +6,13 @@
 
 AIを活用した競艇（ボートレース）予測・分析システム。機械学習モデルによる勝率予測、リアルタイムオッズ分析、自動ベッティング最適化などの機能を提供。
 
+## 🔧 最新バージョン (v3.0.0) の変更点
+
+- **モジュラーAPI構造**: 機能別に分離された新しいAPIアーキテクチャ
+- **リアルタイムパイプライン**: 統合されたバックグラウンド処理
+- **WebSocket通知**: レース開始・結果のリアルタイム通知
+- **スナイパー機能**: レース直前の高精度予測
+
 ## ✨ 主な機能
 
 ### 予測・分析
@@ -38,8 +45,8 @@ cp .env.example .env
 # 依存関係インストール
 pip install -r requirements.txt
 
-# APIサーバー起動
-python -m uvicorn src.api.main_api:app --reload --port 8000
+# APIサーバー起動 (新しいモジュラー構造)
+python -m uvicorn src.api.main_api_new:app --reload --port 8000
 
 # フロントエンド起動
 cd web-ui && npm install && npm run dev
@@ -56,6 +63,16 @@ docker-compose up -d
 kouei/
 ├── src/
 │   ├── api/           # FastAPI エンドポイント
+│   │   ├── main_api_new.py  # メインアプリ（新しいモジュラー構造）
+│   │   ├── routers/         # 機能別ルーター
+│   │   │   ├── prediction.py # 予測エンドポイント
+│   │   │   ├── races.py      # レース情報エンドポイント
+│   │   │   ├── analysis.py   # 分析エンドポイント
+│   │   │   ├── betting.py    # ベッティングエンドポイント
+│   │   │   ├── portfolio.py  # ポートフォリオエンドポイント
+│   │   │   ├── system.py     # システムエンドポイント
+│   │   │   └── sync.py       # 同期エンドポイント
+│   │   └── dependencies.py   # 依存性注入
 │   ├── model/         # ML モデル (LightGBM, XGBoost, CatBoost, ONNX)
 │   ├── features/      # 特徴量エンジニアリング
 │   ├── collector/     # データ収集 (非同期対応)
@@ -85,28 +102,64 @@ kouei/
 
 ## 📊 API エンドポイント
 
-### コアAPI (v1)
+### システム
+- `GET /` - APIルート
+- `GET /health` - ヘルスチェック
 - `GET /api/status` - システム状態
+
+### レース情報
+- `GET /api/stadiums` - 競技場一覧
+- `GET /api/races` - レース情報
+- `GET /api/today` - 本日のレース
+
+### 予測
 - `GET /api/prediction` - レース予測
-- `GET /api/simulation` - シミュレーション結果
-- `POST /api/sync` - データ同期
+- `GET /api/similar-races` - 類似レース検索
+- `POST /api/simulate-what-if` - 仮想シミュレーション
 
-### 拡張API (v2)
-- `GET /api/v2/compatibility` - 相性分析
-- `GET /api/v2/weather/forecast` - 気象予測
-- `POST /api/v2/betting/optimize` - ベッティング最適化
-- `POST /api/v2/commentary/generate` - AI解説生成
+### 分析
+- `GET /api/racer/{racer_id}` - 選手統計
+- `GET /api/compatibility` - 相性分析
+- `GET /api/stadium-matrix/{stadium}` - 会場マトリクス
+- `POST /api/concierge/chat` - AIコンシェルジュ
 
-詳細は `/docs` (Swagger UI) を参照。
+### ベッティング
+- `GET /api/odds` - オッズ情報
+- `POST /api/betting/optimize` - 最適化
+- `POST /api/betting/formation` - フォーメーション
+
+### ポートフォリオ
+- `GET /api/portfolio` - ポートフォリオ状態
+- `GET /api/simulation` - シミュレーション
+- `GET /api/backtest` - バックテスト
+- `GET /api/strategies` - 戦略一覧
+
+### 同期
+- `GET /api/sync` - 同期状態
+- `GET /api/config` - 設定取得
+- `POST /api/config` - 設定更新
+
+詳細は `/docs` (Swagger UI) または `/redoc` (ReDoc) を参照。
 
 ## 🧪 テスト
 
 ```bash
+# 依存関係インストール
+pip install pytest pytest-cov pytest-asyncio
+
 # 全テスト実行
 pytest tests/ -v
 
+# 特定のテスト実行
+pytest tests/test_api_routers.py::TestAnalysisEndpoints::test_racer_stats -v
+
 # カバレッジ付き
 pytest tests/ --cov=src --cov-report=html
+
+# E2Eテスト (Playwrightが必要)
+pip install pytest-playwright
+playwright install
+pytest tests/e2e/ -v
 ```
 
 ## 📝 ライセンス
@@ -118,3 +171,59 @@ MIT License
 - [LightGBM](https://lightgbm.readthedocs.io/)
 - [FastAPI](https://fastapi.tiangolo.com/)
 - [React](https://react.dev/)
+
+## 📈 パフォーマンスモニタリング
+
+- モデルドリフト検出: `/api/drift-check`
+- バックテスト履歴: `/api/backtest/history`
+- パイプライン状態: ログまたはWebSocket通知
+
+## 🚀 デプロイメント
+
+### systemdサービス設定
+
+```ini
+# /etc/systemd/system/kouei-api.service
+[Unit]
+Description=Kouei API Service
+After=network.target
+
+[Service]
+Type=simple
+User=exedev
+WorkingDirectory=/home/exedev/Kouei
+ExecStart=/home/exedev/Kouei/.venv/bin/uvicorn src.api.main_api_new:app --host 0.0.0.0 --port 8000
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
+```
+
+### nginxリバースプロキシ設定
+
+```nginx
+server {
+    listen 80;
+    server_name your-domain.com;
+    
+    location / {
+        proxy_pass http://localhost:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
+```
+
+## 🤝 コントリビューション
+
+1. Forkしてfeatureブランチを作成
+2. 変更をコミット
+3. テストを実行
+4. Pull Requestを作成
+
+## 📞 サポート
+
+- Issues: GitHub Issuesを使用
+- ドキュメント: `/docs` または `/redoc`
+- ログ: `logs/` ディレクトリ
