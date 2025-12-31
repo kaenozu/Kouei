@@ -1,0 +1,146 @@
+[
+    {
+        "name": "13#medium#0.3",
+        "display_name": "会場13 / 風4-6m / 自信30%+",
+        "filters": {
+            "jyo": "13",
+            "wind_min": 4,
+            "wind_max": 6,
+            "min_prob": 0.3
+        },
+        "stats": {
+            "roi": 193.5,
+            "hit_rate": 71.7,
+            "sample_size": 46,
+            "profit": 4300
+        }
+    },
+    {
+        "name": "13#medium#0.4",
+        "display_name": "会場13 / 風4-6m / 自信40%+",
+        "filters": {
+            "jyo": "13",
+            "wind_min": 4,
+            "wind_max": 6,
+            "min_prob": 0.4
+        },
+        "stats": {
+            "roi": 191.4,
+            "hit_rate": 71.4,
+            "sample_size": 42,
+            "profit": 3840
+        }
+    },
+    {
+        "name": "13#medium#0.5",
+        "display_name": "会場13 / 風4-6m / 自信50%+",
+        "filters": {
+            "jyo": "13",
+            "wind_min": 4,
+            "wind_max": 6,
+            "min_prob": 0.5
+        },
+        "stats": {
+            "roi": 187.9,
+            "hit_rate": 72.7,
+            "sample_size": 33,
+            "profit": 2900
+        }
+    },
+    {
+        "name": "03#light#0.4",
+        "display_name": "会場03 / 風2-3m / 自信40%+",
+        "filters": {
+            "jyo": "03",
+            "wind_min": 2,
+            "wind_max": 3,
+            "min_prob": 0.4
+        },
+        "stats": {
+            "roi": 132.4,
+            "hit_rate": 61.8,
+            "sample_size": 34,
+            "profit": 1100
+        }
+    },
+    {
+        "name": "03#light#0.3",
+        "display_name": "会場03 / 風2-3m / 自信30%+",
+        "filters": {
+            "jyo": "03",
+            "wind_min": 2,
+            "wind_max": 3,
+            "min_prob": 0.3
+        },
+        "stats": {
+            "roi": 132.3,
+            "hit_rate": 59.1,
+            "sample_size": 44,
+            "profit": 1420
+        }
+    },
+    {
+        "name": "23#calm#0.3",
+        "display_name": "会場23 / 風0-1m / 自信30%+",
+        "filters": {
+            "jyo": "23",
+            "wind_min": 0,
+            "wind_max": 1,
+            "min_prob": 0.3
+        },
+        "stats": {
+            "roi": 130.7,
+            "hit_rate": 60.0,
+            "sample_size": 30,
+            "profit": 920
+        }
+    },
+    {
+        "name": "17#light#0.3",
+        "display_name": "会場17 / 風2-3m / 自信30%+",
+        "filters": {
+            "jyo": "17",
+            "wind_min": 2,
+            "wind_max": 3,
+            "min_prob": 0.3
+        },
+        "stats": {
+            "roi": 123.9,
+            "hit_rate": 77.6,
+            "sample_size": 49,
+            "profit": 1170
+        }
+    },
+    {
+        "name": "17#light#0.4",
+        "display_name": "会場17 / 風2-3m / 自信40%+",
+        "filters": {
+            "jyo": "17",
+            "wind_min": 2,
+            "wind_max": 3,
+            "min_prob": 0.4
+        },
+        "stats": {
+            "roi": 123.8,
+            "hit_rate": 80.0,
+            "sample_size": 45,
+            "profit": 1070
+        }
+    },
+    {
+        "name": "17#light#0.5",
+        "display_name": "会場17 / 風2-3m / 自信50%+",
+        "filters": {
+            "jyo": "17",
+            "wind_min": 2,
+            "wind_max": 3,
+            "min_prob": 0.5
+        },
+        "stats": {
+            "roi": 121.3,
+            "hit_rate": 82.1,
+            "sample_size": 39,
+            "profit": 830
+        }
+    }
+]

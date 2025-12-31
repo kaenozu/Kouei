@@ -43,3 +43,12 @@ node_modules/
 .pytest_cache/
 .coverage
 htmlcov/
+
+# CatBoost training info
+catboost_info/
+
+# Build metadata
+data/processed/.build_metadata.json
+
+# Patch files
+*.patch

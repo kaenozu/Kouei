@@ -1,0 +1,12 @@
+{
+    "learning_rate": 0.07779701652008637,
+    "num_leaves": 128,
+    "max_depth": 4,
+    "min_child_samples": 89,
+    "subsample": 0.7799346170448253,
+    "colsample_bytree": 0.5065432292886356,
+    "objective": "binary",
+    "metric": "binary_logloss",
+    "verbose": -1,
+    "boosting_type": "gbdt"
+}
