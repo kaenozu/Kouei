@@ -73,16 +73,30 @@ class ProgramParser:
             boat_no = int(boat_node.get_text(strip=True))
             
             # 2. Racer Info
-            # The racer name and ID are in the next td
-            profile_node = tbody.find('a', href=re.compile(r'toban=\d+'))
+            # The racer name is in div.is-fs18.is-fBold > a
+            # The racer ID is in the href (toban=XXXX)
             racer_name = ""
             racer_id = ""
-            if profile_node:
-                racer_name = profile_node.get_text(strip=True)
-                href = profile_node['href']
-                match = re.search(r'toban=(\d+)', href)
-                if match:
-                    racer_id = match.group(1)
+            
+            # Find the name link (in is-fs18 is-fBold div)
+            name_div = tbody.find('div', class_='is-fs18')
+            if name_div:
+                name_link = name_div.find('a', href=re.compile(r'toban=\d+'))
+                if name_link:
+                    racer_name = name_link.get_text(strip=True).replace('\u3000', ' ').strip()
+                    href = name_link['href']
+                    match = re.search(r'toban=(\d+)', href)
+                    if match:
+                        racer_id = match.group(1)
+            
+            # Fallback: try any toban link
+            if not racer_id:
+                profile_node = tbody.find('a', href=re.compile(r'toban=\d+'))
+                if profile_node:
+                    href = profile_node['href']
+                    match = re.search(r'toban=(\d+)', href)
+                    if match:
+                        racer_id = match.group(1)
             
             # 3. Motor and Boat stats
             # These are in the subsequent tds.
