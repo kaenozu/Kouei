@@ -8,7 +8,11 @@ FEATURES = [
     'temperature', 'water_temperature', 
     'wind_speed', 'wave_height', 
     'wind_direction', 'weather',
-    'racer_win_rate_diff', 'motor_2ren_diff', 'exhibition_time_diff'
+    'racer_win_rate_diff', 'motor_2ren_diff', 'exhibition_time_diff',
+    # New features for improved prediction
+    'is_course_1', 'course_advantage',
+    'is_inner_course', 'is_outer_course',
+    'wind_course_interaction', 'motor_exhibition_ratio'
 ]
 
 CAT_FEATURES = ['jyo_cd', 'boat_no', 'wind_direction', 'weather']
@@ -88,4 +92,18 @@ def preprocess(df, is_training=False):
         df['motor_2ren_diff'] = 0.0
         df['exhibition_time_diff'] = 0.0
 
+    # === NEW FEATURES ===
+    # Course-based features (boat_no 1 has ~50% win rate, 6 has ~5%)
+    COURSE_BASE_WIN_RATE = {1: 0.486, 2: 0.115, 3: 0.177, 4: 0.118, 5: 0.069, 6: 0.048}
+    df['is_course_1'] = (df['boat_no'] == 1).astype(int)
+    df['course_advantage'] = df['boat_no'].map(COURSE_BASE_WIN_RATE).fillna(0.1)
+    df['is_inner_course'] = (df['boat_no'] <= 2).astype(int)  # 1,2 = inner
+    df['is_outer_course'] = (df['boat_no'] >= 5).astype(int)  # 5,6 = outer
+    
+    # Wind-Course interaction (wind affects outer courses more)
+    df['wind_course_interaction'] = df['wind_speed'] * (df['boat_no'] - 3.5)  # centered at 3.5
+    
+    # Motor-Exhibition ratio (good motor + fast exhibition = strong)
+    df['motor_exhibition_ratio'] = df['motor_2ren'] / (df['exhibition_time'] + 0.1)
+    
     return df
