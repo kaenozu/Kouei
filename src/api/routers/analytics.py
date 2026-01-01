@@ -264,3 +264,111 @@ async def get_racer_leaderboard(
     
     cache.set(cache_key, result, ttl=3600)
     return result
+
+
+@router.get("/backtest/high-prob")
+async def backtest_high_probability_strategy(
+    threshold: float = Query(0.7, ge=0.5, le=0.9),
+    days: int = Query(7, ge=1, le=30)
+):
+    """
+    Backtest high probability strategy
+    Shows ROI for betting only on races above probability threshold
+    """
+    import os
+    import pandas as pd
+    from datetime import datetime, timedelta
+    from src.features.preprocessing import preprocess, FEATURES
+    from src.model.predictor import Predictor
+    
+    DATA_PATH = "data/processed/race_data.csv"
+    if not os.path.exists(DATA_PATH):
+        return {"error": "No data available"}
+    
+    df = pd.read_csv(DATA_PATH)
+    df = preprocess(df, is_training=True)
+    
+    # Filter to recent days
+    unique_dates = sorted(df['date'].unique())
+    test_dates = unique_dates[-days:] if len(unique_dates) >= days else unique_dates
+    test_df = df[df['date'].isin(test_dates)].copy()
+    
+    if len(test_df) == 0:
+        return {"error": "No test data available"}
+    
+    # Predict
+    predictor = Predictor()
+    X = test_df[FEATURES]
+    test_df['pred'] = predictor.predict(X)
+    
+    # Aggregate by race
+    results = []
+    for (date, jyo, race), group in test_df.groupby(['date', 'jyo_cd', 'race_no']):
+        top = group.sort_values('pred', ascending=False).iloc[0]
+        winner = group[group['target'] == 1]
+        actual_tansho = winner['tansho'].iloc[0] if len(winner) > 0 else 0
+        
+        results.append({
+            'date': int(date),
+            'jyo': str(jyo),
+            'race': int(race),
+            'top_prob': float(top['pred']),
+            'top_boat': int(top['boat_no']),
+            'hit': 1 if top['target'] == 1 else 0,
+            'tansho': float(actual_tansho) if top['target'] == 1 else 0
+        })
+    
+    results_df = pd.DataFrame(results)
+    
+    # Filter by threshold
+    filtered = results_df[results_df['top_prob'] >= threshold]
+    
+    if len(filtered) == 0:
+        return {
+            "threshold": threshold,
+            "days": days,
+            "total_races": 0,
+            "message": "No races above threshold"
+        }
+    
+    hits = int(filtered['hit'].sum())
+    total = len(filtered)
+    hit_rate = hits / total * 100
+    
+    total_bet = total * 100
+    total_return = filtered['tansho'].sum() * 10
+    roi = (total_return - total_bet) / total_bet * 100 if total_bet > 0 else 0
+    profit = total_return - total_bet
+    
+    # Daily breakdown
+    daily_stats = []
+    for date in sorted(filtered['date'].unique()):
+        day_df = filtered[filtered['date'] == date]
+        day_hits = int(day_df['hit'].sum())
+        day_total = len(day_df)
+        day_return = day_df['tansho'].sum() * 10
+        day_bet = day_total * 100
+        
+        daily_stats.append({
+            "date": str(date),
+            "races": day_total,
+            "hits": day_hits,
+            "hit_rate": round(day_hits / day_total * 100, 1) if day_total > 0 else 0,
+            "bet": int(day_bet),
+            "return": int(day_return),
+            "profit": int(day_return - day_bet)
+        })
+    
+    return {
+        "threshold": threshold,
+        "days": days,
+        "period": f"{min(filtered['date'])} - {max(filtered['date'])}",
+        "total_races": total,
+        "hits": hits,
+        "hit_rate": round(hit_rate, 1),
+        "total_bet": int(total_bet),
+        "total_return": int(total_return),
+        "profit": int(profit),
+        "roi": round(roi, 1),
+        "daily_stats": daily_stats
+    }
