@@ -66,15 +66,35 @@ async def get_prediction(
         
         probs = model.predict(X)
         
+        # Load racer course stats
+        try:
+            from src.features.racer_course_stats import load_stats
+            racer_stats = load_stats()
+        except:
+            racer_stats = {}
+        
         # Build results
         results = []
         for i, (idx, row) in enumerate(race_data.iterrows()):
+            boat_no = int(row['boat_no'])
+            racer_id = str(row.get('racer_id', ''))
+            
+            # Get racer's course-specific win rate
+            course_win_rate = None
+            if racer_id in racer_stats and str(boat_no) in racer_stats[racer_id]:
+                course_win_rate = racer_stats[racer_id][str(boat_no)]
+            
             results.append({
-                "boat_no": int(row['boat_no']),
-                "racer_name": str(row['racer_name']) if pd.notna(row.get('racer_name')) else f"Boat {row['boat_no']}",
+                "boat_no": boat_no,
+                "racer_id": racer_id,
+                "racer_name": str(row['racer_name']) if pd.notna(row.get('racer_name')) else f"Boat {boat_no}",
                 "probability": float(probs[i]),
                 "motor_rank": "A" if row.get('motor_2ren', 0) > 40 else "B" if row.get('motor_2ren', 0) > 30 else "C",
-                "racer_rank": "A" if row.get('racer_win_rate', 0) > 6.5 else "B" if row.get('racer_win_rate', 0) > 5.0 else "C"
+                "racer_rank": "A" if row.get('racer_win_rate', 0) > 6.5 else "B" if row.get('racer_win_rate', 0) > 5.0 else "C",
+                "racer_win_rate": float(row.get('racer_win_rate', 0)),
+                "course_win_rate": course_win_rate,
+                "motor_2ren": float(row.get('motor_2ren', 0)),
+                "exhibition_time": float(row.get('exhibition_time', 0))
             })
             
         sorted_results = sorted(results, key=lambda x: x['probability'], reverse=True)
