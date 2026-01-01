@@ -9,10 +9,12 @@ FEATURES = [
     'wind_speed', 'wave_height', 
     'wind_direction', 'weather',
     'racer_win_rate_diff', 'motor_2ren_diff', 'exhibition_time_diff',
-    # New features for improved prediction
+    # Course-based features
     'is_course_1', 'course_advantage',
     'is_inner_course', 'is_outer_course',
-    'wind_course_interaction', 'motor_exhibition_ratio'
+    'wind_course_interaction', 'motor_exhibition_ratio',
+    # Racer course-specific features
+    'racer_course_win_rate', 'racer_course_advantage'
 ]
 
 CAT_FEATURES = ['jyo_cd', 'boat_no', 'wind_direction', 'weather']
@@ -105,5 +107,39 @@ def preprocess(df, is_training=False):
     
     # Motor-Exhibition ratio (good motor + fast exhibition = strong)
     df['motor_exhibition_ratio'] = df['motor_2ren'] / (df['exhibition_time'] + 0.1)
+    
+    # === RACER COURSE-SPECIFIC FEATURES ===
+    df = add_racer_course_features(df)
+    
+    return df
+
+
+# Racer course stats integration
+def add_racer_course_features(df):
+    """Add racer's course-specific win rate features"""
+    try:
+        from src.features.racer_course_stats import load_stats
+        stats = load_stats()
+    except:
+        stats = {}
+    
+    BASELINE = {1: 0.486, 2: 0.114, 3: 0.178, 4: 0.118, 5: 0.069, 6: 0.048}
+    
+    df = df.copy()
+    
+    def get_course_win_rate(row):
+        racer_id = str(row.get('racer_id', ''))
+        course = str(int(row.get('boat_no', 1)))
+        if racer_id in stats and course in stats[racer_id]:
+            return stats[racer_id][course]
+        return BASELINE.get(int(course), 0.1)
+    
+    df['racer_course_win_rate'] = df.apply(get_course_win_rate, axis=1)
+    
+    # Advantage over baseline
+    df['racer_course_advantage'] = df.apply(
+        lambda r: r['racer_course_win_rate'] - BASELINE.get(int(r['boat_no']), 0.1),
+        axis=1
+    )
     
     return df
