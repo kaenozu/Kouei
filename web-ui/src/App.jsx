@@ -1356,6 +1356,33 @@ const App = () => {
                           </div>
                           <div className="prob-pct">{(p.probability * 100).toFixed(1)}%</div>
                         </div>
+                        {/* 詳細情報行 */}
+                        <div style={{ padding: '0.75rem 1rem', background: 'rgba(0,0,0,0.2)', borderTop: '1px solid var(--glass-border)', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.5rem', fontSize: '0.75rem' }}>
+                          <div style={{ textAlign: 'center' }}>
+                            <div style={{ color: 'var(--text-dim)', marginBottom: '2px' }}>勝率</div>
+                            <div style={{ fontWeight: '700', color: p.racer_win_rate > 6 ? '#00ff88' : '#fff' }}>
+                              {p.racer_win_rate?.toFixed(2) || '-'}
+                            </div>
+                          </div>
+                          <div style={{ textAlign: 'center' }}>
+                            <div style={{ color: 'var(--text-dim)', marginBottom: '2px' }}>{p.boat_no}コース勝率</div>
+                            <div style={{ fontWeight: '700', color: p.course_win_rate > 0.3 ? '#00f2ff' : p.course_win_rate ? '#fff' : '#666' }}>
+                              {p.course_win_rate ? (p.course_win_rate * 100).toFixed(0) + '%' : '-'}
+                            </div>
+                          </div>
+                          <div style={{ textAlign: 'center' }}>
+                            <div style={{ color: 'var(--text-dim)', marginBottom: '2px' }}>モーター2連</div>
+                            <div style={{ fontWeight: '700', color: p.motor_2ren > 40 ? '#00ff88' : '#fff' }}>
+                              {p.motor_2ren?.toFixed(1) || '-'}%
+                            </div>
+                          </div>
+                          <div style={{ textAlign: 'center' }}>
+                            <div style={{ color: 'var(--text-dim)', marginBottom: '2px' }}>展示</div>
+                            <div style={{ fontWeight: '700' }}>
+                              {p.exhibition_time?.toFixed(2) || '-'}
+                            </div>
+                          </div>
+                        </div>
                         <div style={{ padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.02)', borderTop: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8rem' }}>
                           <span style={{ color: 'var(--text-dim)' }}>Recommended Bet (Kelly):</span>
                           <span style={{ fontWeight: '800', color: 'var(--success)' }}>
