@@ -6,6 +6,7 @@ import { ToastContainer, useToast } from './components/Toast';
 import DatePicker from './components/DatePicker';
 import AnalyticsDashboard from './components/AnalyticsDashboard';
 import BacktestDashboard from './components/BacktestDashboard';
+import HighValueRaces from './components/HighValueRaces';
 
 const App = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -856,6 +857,9 @@ const App = () => {
           <div className={`nav-item ${activeTab === 'racer' ? 'active' : ''}`} onClick={() => setActiveTab('racer')}>
             🏆 選手追跡
           </div>
+          <div className={`nav-item ${activeTab === 'highvalue' ? 'active' : ''}`} onClick={() => setActiveTab('highvalue')}>
+            🎯 高確率レース
+          </div>
           <div className={`nav-item ${activeTab === 'tools' ? 'active' : ''}`} onClick={() => setActiveTab('tools')}>
             🔬 AI Tools
           </div>
@@ -1012,6 +1016,8 @@ const App = () => {
           <AnalyticsDashboard />
         ) : activeTab === 'racer' ? (
           renderRacerTracker()
+        ) : activeTab === 'highvalue' ? (
+          <HighValueRaces />
         ) : activeTab === 'tools' ? (
           renderTools()
         ) : activeTab === 'settings' ? (
