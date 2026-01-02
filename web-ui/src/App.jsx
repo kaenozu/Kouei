@@ -7,6 +7,8 @@ import DatePicker from './components/DatePicker';
 import AnalyticsDashboard from './components/AnalyticsDashboard';
 import BacktestDashboard from './components/BacktestDashboard';
 import HighValueRaces from './components/HighValueRaces';
+import OddsAnalysis from './components/features/OddsAnalysis';
+import PredictionAccuracy from './components/features/PredictionAccuracy';
 
 const App = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -887,7 +889,13 @@ const App = () => {
           <div style={{ padding: '1rem' }}>
             <h1 style={{ fontSize: '2.5rem', fontWeight: '900', marginBottom: '0.5rem' }}>Race Selection</h1>
             <p style={{ color: 'var(--text-dim)', marginBottom: '3rem' }}>予測を確認するレース場とレース番号を指定してください</p>
-            {renderSelection()}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 400px', gap: '2rem' }}>
+              <div>{renderSelection()}</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                <OddsAnalysis jyo={params.jyo} race={params.race} date={params.date} />
+                <PredictionAccuracy />
+              </div>
+            </div>
           </div>
         ) : activeTab === 'today' ? (
           <div style={{ padding: '1rem' }}>
