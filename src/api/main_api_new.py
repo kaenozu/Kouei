@@ -24,6 +24,14 @@ except ImportError:
     advanced_router = None
 from src.api.routers.analytics import router as analytics_router
 from src.api.routers.notifications import router as notifications_router
+try:
+    from src.api.routers.odds import router as odds_router
+except ImportError:
+    odds_router = None
+try:
+    from src.api.routers.accuracy import router as accuracy_router
+except ImportError:
+    accuracy_router = None
 from src.api.dependencies import get_predictor, get_dataframe
 from src.api.routers.system import broadcast_event, active_connections
 from src.api.routers.sync import run_sync, last_sync_time
@@ -93,6 +101,10 @@ app.include_router(analytics_router)
 app.include_router(notifications_router)
 if advanced_router:
     app.include_router(advanced_router)
+if odds_router:
+    app.include_router(odds_router)
+if accuracy_router:
+    app.include_router(accuracy_router)
 
 # Include enhanced API router if available
 try:
