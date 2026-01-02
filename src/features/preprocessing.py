@@ -1,6 +1,13 @@
 import pandas as pd
 import numpy as np
 
+try:
+    from src.features.advanced_features import add_advanced_features, ADVANCED_FEATURES
+    HAS_ADVANCED = True
+except ImportError:
+    HAS_ADVANCED = False
+    ADVANCED_FEATURES = []
+
 # Standard feature list used by the current model
 FEATURES = [
     'jyo_cd', 'boat_no', 'racer_win_rate', 'motor_2ren', 'boat_2ren',
@@ -14,7 +21,15 @@ FEATURES = [
     'is_inner_course', 'is_outer_course',
     'wind_course_interaction', 'motor_exhibition_ratio',
     # Racer course-specific features
-    'racer_course_win_rate', 'racer_course_advantage'
+    'racer_course_win_rate', 'racer_course_advantage',
+    # Advanced features
+    'racer_win_rate_rank', 'racer_win_rate_zscore',
+    'motor_2ren_rank', 'motor_2ren_zscore',
+    'course1_high_winrate', 'course6_high_winrate',
+    'motor_exhibition_synergy',
+    'rough_outer_advantage', 'calm_inner_advantage',
+    'venue_inner_bias', 'venue_sashi_bias',
+    'race_competitiveness', 'is_top_racer'
 ]
 
 CAT_FEATURES = ['jyo_cd', 'boat_no', 'wind_direction', 'weather']
@@ -110,6 +125,10 @@ def preprocess(df, is_training=False):
     
     # === RACER COURSE-SPECIFIC FEATURES ===
     df = add_racer_course_features(df)
+    
+    # === ADVANCED FEATURES ===
+    if HAS_ADVANCED:
+        df = add_advanced_features(df)
     
     return df
 
