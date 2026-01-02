@@ -122,8 +122,13 @@ async def get_odds(
     # Fetch odds from boatrace.jp
     odds_data = await fetch_odds_from_boatrace(date, jyo, race)
     
-    if not odds_data:
-        # Return mock data if fetch fails
+    # Check if we got valid data (at least one non-null odds)
+    has_valid_odds = False
+    if odds_data and odds_data.get('tansho'):
+        has_valid_odds = any(t.get('odds') is not None for t in odds_data['tansho'])
+    
+    if not has_valid_odds:
+        # Return mock data if fetch fails or no valid odds
         odds_data = {
             'tansho': [
                 {'odds': 2.1}, {'odds': 5.5}, {'odds': 8.2},
@@ -133,17 +138,24 @@ async def get_odds(
         }
     
     # Get predictions for EV calculation
+    predictions = []
     try:
-        from src.api.routers.prediction import get_prediction
-        pred_response = await get_prediction(date=date, jyo=jyo, race=race)
-        predictions = pred_response.get('predictions', [])
+        from src.api.dependencies import get_predictor, get_dataframe
+        model = get_predictor()
+        df = get_dataframe()
         
-        # Add probabilities to tansho
-        for i, pred in enumerate(predictions):
-            if i < len(odds_data['tansho']):
-                odds_data['tansho'][i]['probability'] = pred.get('probability', 0)
-    except:
-        predictions = []
+        if model and not df.empty:
+            jyo_str = jyo.zfill(2)
+            race_df = df[(df['date'] == date) & (df['jyo_cd'] == jyo_str) & (df['race_no'] == race)]
+            
+            if not race_df.empty:
+                probs = model.predict(race_df)
+                for i, prob in enumerate(probs):
+                    predictions.append({'boat_no': i + 1, 'probability': prob})
+                    if i < len(odds_data['tansho']):
+                        odds_data['tansho'][i]['probability'] = prob
+    except Exception as e:
+        print(f"Error getting predictions: {e}")
     
     # Calculate value bets
     value_bets = calculate_value_bets(predictions, odds_data)

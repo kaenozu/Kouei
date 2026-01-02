@@ -96,7 +96,7 @@ export const OddsAnalysis = ({ jyo, race, date }) => {
       {odds.tansho && (
         <div style={{ marginBottom: '1.5rem' }}>
           <h4 style={{ marginBottom: '0.75rem', fontSize: '0.875rem', color: 'var(--text-muted)' }}>単勝オッズ</h4>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '0.5rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.5rem' }}>
             {odds.tansho.map((o, i) => {
               const ev = o.probability ? calculateEV(o.probability, o.odds) : null;
               const isValue = ev && ev > 1.2;

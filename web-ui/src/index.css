@@ -821,3 +821,234 @@ body::before {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Enhanced Mobile Styles */
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    left: -100%;
+    top: 0;
+    height: 100vh;
+    z-index: 1000;
+    transition: left 0.3s ease;
+    width: 280px;
+  }
+
+  .sidebar.open {
+    left: 0;
+  }
+
+  .sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+
+  .sidebar-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .mobile-header {
+    display: flex;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--glass-border);
+    z-index: 998;
+    align-items: center;
+    padding: 0 1rem;
+    justify-content: space-between;
+  }
+
+  .main-content {
+    margin-left: 0 !important;
+    padding-top: 70px !important;
+  }
+
+  .card {
+    margin: 0.5rem;
+    padding: 1rem !important;
+  }
+
+  h1 {
+    font-size: 1.5rem !important;
+  }
+
+  .race-row {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 0.75rem;
+  }
+
+  .race-row .prob-bar {
+    width: 100%;
+  }
+
+  .prediction-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Bottom navigation for mobile */
+  .mobile-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: var(--bg);
+    border-top: 1px solid var(--glass-border);
+    z-index: 998;
+    justify-content: space-around;
+    align-items: center;
+    padding: 0 0.5rem;
+  }
+
+  .mobile-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.5rem;
+    color: var(--text-dim);
+    font-size: 0.65rem;
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+
+  .mobile-nav-item.active {
+    color: var(--primary);
+  }
+
+  .mobile-nav-item svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* Hide desktop elements on mobile */
+  .desktop-only {
+    display: none !important;
+  }
+
+  /* Chat widget positioning */
+  button[style*="position: fixed"][style*="bottom: 2rem"] {
+    bottom: 5rem !important;
+  }
+}
+
+@media (min-width: 769px) {
+  .mobile-only {
+    display: none !important;
+  }
+
+  .mobile-header {
+    display: none !important;
+  }
+
+  .mobile-nav {
+    display: none !important;
+  }
+}
+
+/* Touch-friendly buttons */
+@media (pointer: coarse) {
+  button, .btn-primary, .nav-item {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  input, select {
+    min-height: 44px;
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+}
+
+/* Pull to refresh indicator */
+.pull-indicator {
+  position: fixed;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0.5rem 1rem;
+  background: var(--primary);
+  color: #000;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  z-index: 1001;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.pull-indicator.visible {
+  opacity: 1;
+}
+
+/* Swipe gestures visual feedback */
+.swipeable {
+  touch-action: pan-y;
+  user-select: none;
+}
+
+/* Safe area insets for notched devices */
+@supports (padding: max(0px)) {
+  .mobile-header {
+    padding-top: max(0px, env(safe-area-inset-top));
+    height: calc(60px + max(0px, env(safe-area-inset-top)));
+  }
+
+  .mobile-nav {
+    padding-bottom: max(0px, env(safe-area-inset-bottom));
+    height: calc(60px + max(0px, env(safe-area-inset-bottom)));
+  }
+
+  .main-content {
+    padding-bottom: calc(70px + max(0px, env(safe-area-inset-bottom)));
+  }
+}
+
+/* Skeleton loading animation */
+.skeleton {
+  background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+}
+
+@keyframes skeleton-loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Spin animation for loading */
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Improved scrollbar for mobile */
+@media (max-width: 768px) {
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.2);
+    border-radius: 2px;
+  }
+}
