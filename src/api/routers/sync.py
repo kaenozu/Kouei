@@ -117,6 +117,17 @@ def run_sync():
         # Refresh cached dataframe
         refresh_dataframe()
         
+        # Update accuracy tracking with new results
+        try:
+            from src.api.routers.accuracy import update_results_from_dataframe
+            from src.api.dependencies import get_dataframe
+            df = get_dataframe()
+            updated = update_results_from_dataframe(df)
+            if updated > 0:
+                logger.info(f"Updated {updated} prediction results for accuracy tracking")
+        except Exception as acc_err:
+            logger.warning(f"Failed to update accuracy: {acc_err}")
+        
         # Check for auto-training
         _check_auto_training()
         

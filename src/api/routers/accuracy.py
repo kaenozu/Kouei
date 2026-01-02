@@ -257,3 +257,40 @@ async def record_result(
     """Record actual race result"""
     update_result(date, jyo, race, winner)
     return {"status": "ok"}
+
+
+def update_results_from_dataframe(df):
+    """Update accuracy results from race data dataframe"""
+    init_accuracy_db()
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    
+    updated = 0
+    # Get races with results (rank column)
+    if 'rank' in df.columns:
+        results = df[df['rank'] == 1][['date', 'jyo_cd', 'race_no', 'boat_no']].drop_duplicates()
+        
+        for _, row in results.iterrows():
+            date = str(row['date'])
+            jyo_cd = str(row['jyo_cd']).zfill(2)
+            race_no = int(row['race_no'])
+            winner = int(row['boat_no'])
+            
+            # Check if we have predictions for this race
+            cursor.execute('''
+                SELECT COUNT(*) FROM predictions 
+                WHERE date = ? AND jyo_cd = ? AND race_no = ? AND actual_result IS NULL
+            ''', (date, jyo_cd, race_no))
+            
+            if cursor.fetchone()[0] > 0:
+                # Update results
+                cursor.execute('''
+                    UPDATE predictions 
+                    SET actual_result = CASE WHEN boat_no = ? THEN 1 ELSE 0 END
+                    WHERE date = ? AND jyo_cd = ? AND race_no = ?
+                ''', (winner, date, jyo_cd, race_no))
+                updated += cursor.rowcount
+    
+    conn.commit()
+    conn.close()
+    return updated

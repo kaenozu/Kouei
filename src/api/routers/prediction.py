@@ -134,6 +134,22 @@ async def get_prediction(
         # Cache for 5 minutes
         cache.set(cache_key, response, ttl=300)
         
+        # Auto-track predictions for accuracy analysis
+        try:
+            from src.api.routers.accuracy import save_prediction
+            for pred in sorted_results:
+                save_prediction(
+                    date=date,
+                    jyo_cd=jyo_str,
+                    race_no=race,
+                    boat_no=pred['boat_no'],
+                    prob=pred['probability'],
+                    confidence=confidence
+                )
+            logger.info(f"Tracked {len(sorted_results)} predictions for accuracy")
+        except Exception as track_err:
+            logger.warning(f"Failed to track prediction: {track_err}")
+        
         return response
         
     except Exception as e:
