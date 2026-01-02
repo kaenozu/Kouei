@@ -23,7 +23,7 @@ export const OddsAnalysis = ({ jyo, race, date }) => {
   const fetchOdds = async () => {
     setLoading(true);
     try {
-      const resp = await fetch(`http://localhost:8001/api/odds/analysis?date=${date}&jyo=${jyo}&race=${race}`);
+      const resp = await fetch(`/api/odds/analysis?date=${date}&jyo=${jyo}&race=${race}`);
       const data = await resp.json();
       setOdds(data);
     } catch (e) {

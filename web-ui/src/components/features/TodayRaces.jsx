@@ -13,7 +13,7 @@ export const TodayRaces = ({ onSelectRace }) => {
   const fetchTodayRaces = async () => {
     setLoading(true);
     try {
-      const resp = await fetch('http://localhost:8001/api/today');
+      const resp = await fetch('/api/today');
       const data = await resp.json();
       if (data && data.races) {
         setTodayRaces(data.races);

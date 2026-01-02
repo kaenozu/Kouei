@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Target, TrendingUp, Star, AlertCircle, RefreshCw } from 'lucide-react';
 import BacktestResults from './BacktestResults';
 
-const API_BASE = 'http://localhost:8001';
+const API_BASE = '';
 
 const HighValueRaces = () => {
   const [races, setRaces] = useState([]);

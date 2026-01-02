@@ -8,7 +8,7 @@ export const NotificationCenter = () => {
 
   useEffect(() => {
     // WebSocketで通知を受信
-    const ws = new WebSocket('ws://localhost:8001/api/ws');
+    const ws = new WebSocket('wss://tree-router.exe.xyz:8000/api/ws');
     
     ws.onmessage = (event) => {
       try {

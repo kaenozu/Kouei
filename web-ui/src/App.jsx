@@ -9,6 +9,8 @@ import BacktestDashboard from './components/BacktestDashboard';
 import HighValueRaces from './components/HighValueRaces';
 import OddsAnalysis from './components/features/OddsAnalysis';
 import PredictionAccuracy from './components/features/PredictionAccuracy';
+import { NotificationCenter } from './components/features/NotificationCenter';
+import { SettingsPanel } from './components/features/SettingsPanel';
 
 const App = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -50,7 +52,7 @@ const App = () => {
   const fetchPrediction = async () => {
     setLoading(true);
     try {
-      const resp = await fetch(`http://localhost:8001/api/prediction?date=${params.date}&jyo=${params.jyo}&race=${params.race}`);
+      const resp = await fetch(`/api/prediction?date=${params.date}&jyo=${params.jyo}&race=${params.race}`);
       const data = await resp.json();
       if (data && data.predictions) {
         setPredictions(data.predictions);
@@ -73,7 +75,7 @@ const App = () => {
   const runWhatIfSimulation = async (modifiedFeatures) => {
     setWhatIfSimulating(true);
     try {
-      const resp = await fetch('http://localhost:8001/api/simulate-what-if', {
+      const resp = await fetch('/api/simulate-what-if', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ modifications: modifiedFeatures })
@@ -97,7 +99,7 @@ const App = () => {
     if (!window.confirm(`${params.date} のデータを取得し、AIを再構築しますか？\n(数十秒かかります)`)) return;
     setFetching(true);
     try {
-      const resp = await fetch(`http://localhost:8001/api/fetch?date=${params.date}`, { method: 'POST' });
+      const resp = await fetch(`/api/fetch?date=${params.date}`, { method: 'POST' });
       const data = await resp.json();
       if (data.status === 'success') {
         addToast("データの取得と更新が完了しました", "success");
@@ -114,7 +116,7 @@ const App = () => {
 
   const fetchStatus = async () => {
     try {
-      const resp = await fetch('http://localhost:8001/api/status');
+      const resp = await fetch('/api/status');
       const data = await resp.json();
       setStatus(data);
     } catch (e) { }
@@ -122,7 +124,7 @@ const App = () => {
 
   const fetchStadiums = async () => {
     try {
-      const resp = await fetch('http://localhost:8001/api/stadiums');
+      const resp = await fetch('/api/stadiums');
       const data = await resp.json();
       setStadiums(data);
     } catch (e) { }
@@ -130,7 +132,7 @@ const App = () => {
 
   const fetchRaces = async () => {
     try {
-      const resp = await fetch(`http://localhost:8001/api/races?date=${params.date}&jyo=${params.jyo}`);
+      const resp = await fetch(`/api/races?date=${params.date}&jyo=${params.jyo}`);
       const data = await resp.json();
       if (Array.isArray(data)) {
         setRaceList(data);
@@ -165,7 +167,7 @@ const App = () => {
     setChatInput('');
 
     try {
-      const resp = await fetch('http://localhost:8001/api/concierge/chat', {
+      const resp = await fetch('/api/concierge/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query: chatInput })
@@ -179,7 +181,7 @@ const App = () => {
 
   const fetchSimulation = async () => {
     try {
-      const resp = await fetch('http://localhost:8001/api/simulation?threshold=0.4');
+      const resp = await fetch('/api/simulation?threshold=0.4');
       const data = await resp.json();
       if (data.history && data.summary) {
         setSimulationData(data);
@@ -191,7 +193,7 @@ const App = () => {
 
   const fetchTodayRaces = async () => {
     try {
-      const resp = await fetch('http://localhost:8001/api/today');
+      const resp = await fetch('/api/today');
       const data = await resp.json();
       if (data && data.races) {
         setTodayRaces(data.races);
@@ -205,7 +207,7 @@ const App = () => {
   const fetchBacktest = async () => {
     setBacktestLoading(true);
     try {
-      const resp = await fetch('http://localhost:8001/api/backtest', {
+      const resp = await fetch('/api/backtest', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(backtestFilters)
@@ -218,7 +220,7 @@ const App = () => {
 
   const fetchSync = async () => {
     try {
-      await fetch('http://localhost:8001/api/sync');
+      await fetch('/api/sync');
     } catch (e) {
       console.error('Sync failed', e);
     }
@@ -241,7 +243,7 @@ const App = () => {
     fetchPortfolio();
 
     // WebSocket connection for real-time notifications
-    const ws = new WebSocket('ws://localhost:8001/api/ws');
+    const ws = new WebSocket('wss://tree-router.exe.xyz:8000/api/ws');
     ws.onopen = () => console.log('WebSocket connected');
     ws.onclose = () => console.log('WebSocket disconnected');
     ws.onerror = (error) => console.error('WebSocket error', error);
@@ -259,7 +261,7 @@ const App = () => {
 
   const fetchPortfolio = async () => {
     try {
-      const resp = await fetch('http://localhost:8001/api/portfolio');
+      const resp = await fetch('/api/portfolio');
       const data = await resp.json();
       setPortfolio(data);
     } catch (e) { }
@@ -267,7 +269,7 @@ const App = () => {
 
   const fetchStrategies = async () => {
     try {
-      const resp = await fetch('http://localhost:8001/api/strategies');
+      const resp = await fetch('/api/strategies');
       const data = await resp.json();
       setStrategies(data);
     } catch (e) { }
@@ -277,7 +279,7 @@ const App = () => {
     if (!window.confirm("モデルの最適化を開始しますか？(数分〜数時間かかります)")) return;
     setOptimizing(true);
     try {
-      await fetch('http://localhost:8001/api/optimize', { method: 'POST' });
+      await fetch('/api/optimize', { method: 'POST' });
       addToast("最適化を開始しました", "info");
     } catch (e) { addToast("エラーが発生しました", "error"); }
     setOptimizing(false);
@@ -287,7 +289,7 @@ const App = () => {
     if (!window.confirm("お宝条件の発掘を開始しますか？\n(全データの総当たりシミュレーションを行います)")) return;
     setDiscovering(true);
     try {
-      await fetch('http://localhost:8001/api/strategy/discover', { method: 'POST' });
+      await fetch('/api/strategy/discover', { method: 'POST' });
       addToast("発掘を開始しました", "info");
       // Poll for update?
       setTimeout(fetchStrategies, 10000);
@@ -300,7 +302,7 @@ const App = () => {
     if (!racerSearch) return;
     setRacerLoading(true);
     try {
-      const resp = await fetch(`http://localhost:8001/api/racer/${racerSearch}`);
+      const resp = await fetch(`/api/racer/${racerSearch}`);
       const data = await resp.json();
       setRacerStats(data);
     } catch (e) {
@@ -314,7 +316,7 @@ const App = () => {
     if (!selectedMonteCarloStrategy) return;
     setMonteCarloLoading(true);
     try {
-      const resp = await fetch(`http://localhost:8001/api/monte-carlo/${selectedMonteCarloStrategy}?n_simulations=1000`);
+      const resp = await fetch(`/api/monte-carlo/${selectedMonteCarloStrategy}?n_simulations=1000`);
       const data = await resp.json();
       setMonteCarloResult(data);
     } catch (e) {
@@ -836,7 +838,10 @@ const App = () => {
   return (
     <div className="dashboard">
       <aside className="sidebar">
-        <h1>AI KYOTEI</h1>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+          <h1 style={{ margin: 0 }}>AI KYOTEI</h1>
+          <NotificationCenter />
+        </div>
         <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
           <div className={`nav-item ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveTab('dashboard')}>
             <LayoutDashboard size={22} /> ダッシュボード
@@ -1029,7 +1034,7 @@ const App = () => {
         ) : activeTab === 'tools' ? (
           renderTools()
         ) : activeTab === 'settings' ? (
-          renderSettings()
+          <SettingsPanel />
         ) : (
           <>
             <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>

@@ -13,7 +13,7 @@ export const Portfolio = () => {
 
   const fetchStrategies = async () => {
     try {
-      const resp = await fetch('http://localhost:8001/api/betting/strategies');
+      const resp = await fetch('/api/betting/strategies');
       const data = await resp.json();
       setStrategies(data.strategies || []);
     } catch (e) {
@@ -24,7 +24,7 @@ export const Portfolio = () => {
   const optimizePortfolio = async () => {
     setOptimizing(true);
     try {
-      const resp = await fetch('http://localhost:8001/api/betting/optimize', {
+      const resp = await fetch('/api/betting/optimize', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

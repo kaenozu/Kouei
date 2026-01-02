@@ -10,7 +10,7 @@ export const RacerTracker = () => {
     if (!racerSearch) return;
     setRacerLoading(true);
     try {
-      const resp = await fetch(`http://localhost:8001/api/racer/${racerSearch}`);
+      const resp = await fetch(`/api/racer/${racerSearch}`);
       const data = await resp.json();
       setRacerStats(data);
     } catch (e) {

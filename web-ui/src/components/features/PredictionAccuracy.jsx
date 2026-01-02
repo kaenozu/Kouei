@@ -14,7 +14,7 @@ export const PredictionAccuracy = () => {
   const fetchAccuracyData = async () => {
     setLoading(true);
     try {
-      const resp = await fetch(`http://localhost:8001/api/accuracy?days=${dateRange}`);
+      const resp = await fetch(`/api/accuracy?days=${dateRange}`);
       const data = await resp.json();
       setAccuracyData(data);
     } catch (e) {

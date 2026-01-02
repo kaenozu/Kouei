@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { TrendingUp, Calendar, Target, DollarSign, RefreshCw } from 'lucide-react';
 
-const API_BASE = 'http://localhost:8001';
+const API_BASE = '';
 
 const BacktestResults = ({ threshold = 0.7 }) => {
   const [results, setResults] = useState(null);

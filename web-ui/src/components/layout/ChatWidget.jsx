@@ -15,7 +15,7 @@ export const ChatWidget = () => {
     setChatInput('');
 
     try {
-      const resp = await fetch('http://localhost:8001/api/concierge/chat', {
+      const resp = await fetch('/api/concierge/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query: chatInput })

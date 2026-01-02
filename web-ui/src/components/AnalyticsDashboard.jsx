@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { TrendingUp, TrendingDown, Target, Award, MapPin } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 
-const API_BASE = 'http://localhost:8001';
+const API_BASE = '';
 
 const StatCard = ({ title, value, subtitle, trend, icon: Icon }) => (
   <div className="stat-card" style={{
