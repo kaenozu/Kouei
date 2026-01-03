@@ -32,6 +32,10 @@ try:
     from src.api.routers.accuracy import router as accuracy_router
 except ImportError:
     accuracy_router = None
+try:
+    from src.api.routers.smart_betting import router as smart_betting_router
+except ImportError:
+    smart_betting_router = None
 from src.api.dependencies import get_predictor, get_dataframe
 from src.api.routers.system import broadcast_event, active_connections
 from src.api.routers.sync import run_sync, last_sync_time
@@ -105,6 +109,8 @@ if odds_router:
     app.include_router(odds_router)
 if accuracy_router:
     app.include_router(accuracy_router)
+if smart_betting_router:
+    app.include_router(smart_betting_router)
 
 # Include enhanced API router if available
 try:
