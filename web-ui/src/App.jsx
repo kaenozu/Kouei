@@ -11,6 +11,8 @@ import OddsAnalysis from './components/features/OddsAnalysis';
 import PredictionAccuracy from './components/features/PredictionAccuracy';
 import { NotificationCenter } from './components/features/NotificationCenter';
 import { SettingsPanel } from './components/features/SettingsPanel';
+import SmartBets from './components/features/SmartBets';
+import UpcomingBets from './components/features/UpcomingBets';
 
 const App = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -1030,7 +1032,7 @@ const App = () => {
         ) : activeTab === 'racer' ? (
           renderRacerTracker()
         ) : activeTab === 'highvalue' ? (
-          <HighValueRaces />
+          <SmartBets />
         ) : activeTab === 'tools' ? (
           renderTools()
         ) : activeTab === 'settings' ? (
@@ -1150,11 +1152,21 @@ const App = () => {
               </div>
             </div>
 
-            <WhatIfPanel
-              initialFeatures={whatIfFeatures}
-              onSimulate={runWhatIfSimulation}
-              loading={whatIfSimulating}
-            />
+            {/* Quick Actions: Upcoming Bets + What-If */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+              <UpcomingBets 
+                onSelectRace={(jyo, race) => {
+                  setParams({ ...params, jyo, race });
+                  setActiveTab('dashboard');
+                  fetchPrediction();
+                }} 
+              />
+              <WhatIfPanel
+                initialFeatures={whatIfFeatures}
+                onSimulate={runWhatIfSimulation}
+                loading={whatIfSimulating}
+              />
+            </div>
 
             <section className="stats-grid">
               <div className="card" style={{ gridColumn: 'span 2' }}>
