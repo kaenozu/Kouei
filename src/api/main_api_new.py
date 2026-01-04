@@ -34,14 +34,28 @@ except ImportError:
     accuracy_router = None
 try:
     from src.api.routers.smart_betting import router as smart_betting_router
+    from src.api.routers.collection import router as collection_router
 except ImportError:
     smart_betting_router = None
+    from src.api.routers.collection import router as collection_router
+try:
+    from src.api.routers.concierge import router as concierge_router
+except ImportError:
+    concierge_router = None
+    
+try:
+    from src.api.routers.model_explainability import router as model_explain_router
+    from src.api.routers.real_time_monitoring import router as real_time_monitoring_router
+except ImportError:
+    model_explain_router = None
+    real_time_monitoring_router = None
 from src.api.dependencies import get_predictor, get_dataframe
 from src.api.routers.system import broadcast_event, active_connections
 from src.api.routers.sync import run_sync, last_sync_time
 from bs4 import BeautifulSoup
 import aiohttp
 from src.monitoring.drift_detector import DriftDetector
+from src.performance.optimization import performance_monitor, cache_manager
 from src.analysis.venue_scoring import VenueScorer
 from src.utils.logger import logger
 
@@ -110,7 +124,23 @@ if odds_router:
 if accuracy_router:
     app.include_router(accuracy_router)
 if smart_betting_router:
+    if collection_router:
+        app.include_router(collection_router)
+    from src.api.routers.collection import router as collection_router
     app.include_router(smart_betting_router)
+    from src.api.routers.collection import router as collection_router
+    if concierge_router:
+        app.include_router(concierge_router)
+    try:
+        from src.api.routers.monitoring import router as monitoring_router
+    except ImportError:
+        monitoring_router = None
+    if monitoring_router:
+        app.include_router(monitoring_router)
+    if model_explain_router:
+        app.include_router(model_explain_router)
+    if real_time_monitoring_router:
+        app.include_router(real_time_monitoring_router)
 
 # Include enhanced API router if available
 try:

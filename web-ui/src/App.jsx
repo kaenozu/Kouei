@@ -4,6 +4,8 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import WhatIfPanel from './components/WhatIfPanel';
 import { ToastContainer, useToast } from './components/Toast';
 import DatePicker from './components/DatePicker';
+import ModelExplainer from './components/ModelExplainer';
+import RealtimeDashboard from './components/RealtimeDashboard';
 import AnalyticsDashboard from './components/AnalyticsDashboard';
 import BacktestDashboard from './components/BacktestDashboard';
 import HighValueRaces from './components/HighValueRaces';
@@ -869,6 +871,12 @@ const App = () => {
           <div className={`nav-item ${activeTab === 'highvalue' ? 'active' : ''}`} onClick={() => setActiveTab('highvalue')}>
             🎯 高確率レース
           </div>
+          <div className={`nav-item ${activeTab === 'model-explainer' ? 'active' : ''}`} onClick={() => setActiveTab('model-explainer')}>
+            <Brain size={22} /> モデル解釈
+          </div>
+          <div className={`nav-item ${activeTab === 'monitoring' ? 'active' : ''}`} onClick={() => setActiveTab('monitoring')}>
+            <Activity size={22} /> リアルタイム監視
+          </div>
           <div className={`nav-item ${activeTab === 'tools' ? 'active' : ''}`} onClick={() => setActiveTab('tools')}>
             🔬 AI Tools
           </div>
@@ -1033,6 +1041,10 @@ const App = () => {
           renderRacerTracker()
         ) : activeTab === 'highvalue' ? (
           <SmartBets />
+        ) : activeTab === 'model-explainer' ? (
+          <ModelExplainer />
+        ) : activeTab === 'monitoring' ? (
+          <RealtimeDashboard />
         ) : activeTab === 'tools' ? (
           renderTools()
         ) : activeTab === 'settings' ? (
@@ -1499,3 +1511,4 @@ const App = () => {
 };
 
 export default App;
+import SmartBettingDashboard from './components/SmartBettingDashboard';
