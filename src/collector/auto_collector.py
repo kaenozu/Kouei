@@ -12,7 +12,7 @@ from pathlib import Path
 from src.collector.downloader import Downloader
 from src.collector.odds_collector import OddsCollector
 from src.parser.schedule_parser import ScheduleParser
-from src.parser.race_parser import RaceParser
+# from src.parser.race_parser import RaceParser
 from src.parser.odds_parser import OddsParser
 from src.api.routers.system import broadcast_event
 from src.config.database import save_race_data, save_odds_data
@@ -27,7 +27,7 @@ class AutoCollector:
         self.downloader = Downloader()
         self.odds_collector = OddsCollector()
         self.schedule_parser = ScheduleParser()
-        self.race_parser = RaceParser()
+# self.race_parser = RaceParser()
         self.odds_parser = OddsParser()
         self.collection_interval = collection_interval  # seconds
         self.running = False
@@ -84,15 +84,6 @@ class AutoCollector:
                 logger.info(f"✅ Schedule collected for {date}")
                 return schedule_data
         except Exception as e:
-            logger.error(f"Schedule collection failed: {e}")
-        return None
-    
-    async def _collect_venue_data(self, date: str, venue_code: str):
-        """会場別レースデータ収集"""
-        try:
-            for race_no in range(1, 13):  # Max 12 races
-                # レースデータ収集
-                race_url = f"https://www.boatrace.jp/topia/race_result_{date}_{venue_code}_{race_no}.html"
                 race_html = await self.downloader.get_race_async(race_url)
                 
                 if race_html:

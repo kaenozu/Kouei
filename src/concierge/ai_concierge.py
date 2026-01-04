@@ -83,7 +83,7 @@ class AIConcierge:
             for (jyo, race_no), race_group in today_df.groupby(['jyo_cd', 'race_no']):
                 analysis = self.analyze_race(race_group)
                 if 'error' not in analysis:
-                    race_analyses.append(analysis)`
+                    race_analyses.append(analysis)
             
             # サマリー生成
             summary = {

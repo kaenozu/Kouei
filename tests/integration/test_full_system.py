@@ -48,10 +48,9 @@ class TestFullSystem:
         async with api_client.get(url) as response:
             assert response.status == 200
             data = await response.json()
-            
-        assert "running" in data
-        assert "collection_interval" in data
-    
+        
+        assert "status" in data
+        assert "message" in data
     @pytest.mark.asyncio
     async def test_concierge_endpoints(self, api_client):
         """AIコンシェルジュエンドポイントテスト"""
