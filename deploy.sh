@@ -35,4 +35,4 @@ sudo systemctl status kouei-web --no-pager -l
 
 echo "🎉 Deployment complete!"
 echo "API: http://localhost:8001"
-echo "Web UI: http://localhost:8080"
+echo "Web UI: http://localhost:3001"
