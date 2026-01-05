@@ -3,19 +3,20 @@ import { Zap, TrendingUp, AlertCircle, RefreshCw, Clock, ChevronRight } from 'lu
 
 export const SmartBets = () => {
   const [bets, setBets] = useState(null);
-  const [threshold, setThreshold] = useState(0.8);
+  const [threshold, setThreshold] = useState(0.7);
+  const [strategy, setStrategy] = useState('course1_focus');
   const [loading, setLoading] = useState(false);
   const [backtest, setBacktest] = useState(null);
 
   useEffect(() => {
     fetchBets();
     fetchBacktest();
-  }, [threshold]);
+  }, [threshold, strategy]);
 
   const fetchBets = async () => {
     setLoading(true);
     try {
-      const resp = await fetch(`/api/smart-bets?threshold=${threshold}&max_bets=20`);
+      const resp = await fetch(`/api/smart-bets?threshold=${threshold}&max_bets=20&strategy=${strategy}`);
       const data = await resp.json();
       setBets(data);
     } catch (e) {
@@ -33,6 +34,12 @@ export const SmartBets = () => {
       console.error('Failed to fetch backtest', e);
     }
   };
+
+  const strategies = [
+    { id: 'course1_focus', name: '1号艇特化', desc: '的中率83%の1号艇予測に特化', icon: '🏆' },
+    { id: 'balanced', name: 'バランス', desc: '1号艇と他コースのミックス', icon: '⚖️' },
+    { id: 'high_prob', name: '高確率', desc: '純粋な確率ベース', icon: '🎯' }
+  ];
 
   const confidenceColors = {
     'S': 'var(--success)',
@@ -70,26 +77,52 @@ export const SmartBets = () => {
         </button>
       </div>
 
-      {/* Threshold selector */}
+      {/* Strategy selector */}
       <div className="card" style={{ padding: '1.5rem', marginBottom: '2rem' }}>
-        <h3 style={{ marginBottom: '1rem' }}>確率閾値設定</h3>
-        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-          {[0.7, 0.8, 0.9].map(t => (
+        <h3 style={{ marginBottom: '1rem' }}>🎯 戦略選択</h3>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1.5rem' }}>
+          {strategies.map(s => (
+            <button
+              key={s.id}
+              onClick={() => setStrategy(s.id)}
+              style={{
+                padding: '1rem',
+                background: strategy === s.id ? 'linear-gradient(135deg, var(--primary), #00d4ff)' : 'rgba(255,255,255,0.05)',
+                color: strategy === s.id ? '#000' : '#fff',
+                border: '2px solid',
+                borderColor: strategy === s.id ? 'var(--primary)' : 'var(--glass-border)',
+                borderRadius: '12px',
+                fontWeight: '700',
+                cursor: 'pointer',
+                textAlign: 'left',
+                transition: 'all 0.2s'
+              }}
+            >
+              <div style={{ fontSize: '1.5rem', marginBottom: '0.25rem' }}>{s.icon}</div>
+              <div style={{ fontSize: '1rem', fontWeight: '800' }}>{s.name}</div>
+              <div style={{ fontSize: '0.7rem', opacity: 0.8, marginTop: '0.25rem' }}>{s.desc}</div>
+            </button>
+          ))}
+        </div>
+        <h4 style={{ marginBottom: '0.75rem', fontSize: '0.9rem' }}>確率閾値</h4>
+        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+          {[0.6, 0.7, 0.8, 0.9].map(t => (
             <button
               key={t}
               onClick={() => setThreshold(t)}
               style={{
-                padding: '0.75rem 1.5rem',
+                padding: '0.5rem 1rem',
                 background: threshold === t ? 'var(--primary)' : 'rgba(255,255,255,0.05)',
                 color: threshold === t ? '#000' : '#fff',
                 border: '1px solid',
                 borderColor: threshold === t ? 'var(--primary)' : 'var(--glass-border)',
-                borderRadius: '10px',
-                fontWeight: '700',
-                cursor: 'pointer'
+                borderRadius: '8px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                fontSize: '0.85rem'
               }}
             >
-              {t * 100}%以上
+              {t * 100}%+
             </button>
           ))}
         </div>
