@@ -6,7 +6,12 @@ from typing import Optional
 from fastapi import Depends, HTTPException, status
 
 from src.model.predictor import Predictor
-from src.model.ensemble import EnsemblePredictor
+try:
+    from src.model.ensemble import EnsemblePredictor
+    HAS_ENSEMBLE = True
+except ImportError:
+    HAS_ENSEMBLE = False
+    EnsemblePredictor = None
 from src.cache.redis_client import RedisCache, cache
 from src.portfolio.ledger import PortfolioLedger
 from src.inference.commentary import CommentaryGenerator
@@ -61,8 +66,11 @@ def get_predictor() -> Predictor:
 
 
 @lru_cache(maxsize=1)
-def get_ensemble_predictor() -> EnsemblePredictor:
+def get_ensemble_predictor():
     """Get cached EnsemblePredictor instance"""
+    if not HAS_ENSEMBLE or EnsemblePredictor is None:
+        logger.warning("EnsemblePredictor not available, using single model")
+        return get_predictor()
     logger.info("Initializing EnsemblePredictor")
     predictor = EnsemblePredictor()
     predictor.load_models()
