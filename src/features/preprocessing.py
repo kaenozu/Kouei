@@ -9,6 +9,7 @@ except ImportError:
     ADVANCED_FEATURES = []
 
 # Standard feature list used by the current model
+# Model-compatible features (41 features)
 FEATURES = [
     'jyo_cd', 'boat_no', 'racer_win_rate', 'motor_2ren', 'boat_2ren',
     'exhibition_time', 'tilt', 
@@ -30,8 +31,19 @@ FEATURES = [
     'rough_outer_advantage', 'calm_inner_advantage',
     'venue_inner_bias', 'venue_sashi_bias',
     'race_competitiveness', 'is_top_racer',
-    # Course interaction features (new)
+    # Course interaction features
     'inner_threat', 'boat1_threat_level', 'upset_potential', 'st_advantage'
+]
+
+# Extended features for V2 model (train with train_v2.py)
+FEATURES_V2 = FEATURES + [
+    # V2 matchup features
+    'avg_opponent_winrate', 'winrate_advantage', 'is_top_racer_in_race',
+    'motor_venue_advantage', 'boat_venue_advantage', 'equipment_score', 'equipment_rank',
+    'is_final', 'is_semifinal', 'is_sg', 'race_importance',
+    # V2 連単 features
+    'base_2nd_rate', 'adjusted_2nd_prob', 'rentai_power', 'sanrentai_power',
+    'wind_course_benefit', 'rough_water_penalty'
 ]
 
 CAT_FEATURES = ['jyo_cd', 'boat_no', 'wind_direction', 'weather']
@@ -135,6 +147,15 @@ def preprocess(df, is_training=False):
     # === COURSE INTERACTION FEATURES ===
     df = add_course_interaction_features(df)
     
+    # === RACER MATCHUP FEATURES ===
+    df = add_racer_matchup_features(df)
+    
+    # === MOTOR/BOAT FEATURES ===
+    df = add_motor_boat_features(df)
+    
+    # === RACE TYPE FEATURES ===
+    df = add_race_type_features(df)
+    
     return df
 
 
@@ -211,3 +232,99 @@ def add_course_interaction_features(df):
                 df.loc[idx, 'st_advantage'] = (mean_ex - group['exhibition_time']) / 0.1
     
     return df
+
+
+def add_racer_matchup_features(df):
+    """Add racer matchup features - how racers perform against each other"""
+    df = df.copy()
+    
+    # Initialize
+    df['avg_opponent_winrate'] = 0.0
+    df['winrate_advantage'] = 0.0
+    df['is_top_racer_in_race'] = 0
+    
+    for (date, jyo, race), group in df.groupby(['date', 'jyo_cd', 'race_no']):
+        if len(group) < 3:
+            continue
+        
+        idx = group.index
+        winrates = group['racer_win_rate'].values
+        avg_winrate = winrates.mean()
+        max_winrate = winrates.max()
+        
+        for i, row_idx in enumerate(idx):
+            # Average opponent win rate
+            opponents = [w for j, w in enumerate(winrates) if j != i]
+            df.loc[row_idx, 'avg_opponent_winrate'] = sum(opponents) / len(opponents) if opponents else 0
+            
+            # Win rate advantage over average
+            df.loc[row_idx, 'winrate_advantage'] = winrates[i] - avg_winrate
+            
+            # Is top racer in race
+            df.loc[row_idx, 'is_top_racer_in_race'] = 1 if winrates[i] == max_winrate else 0
+    
+    return df
+
+
+def add_motor_boat_features(df):
+    """Add motor and boat specific features"""
+    df = df.copy()
+    
+    # Motor performance relative to venue average
+    if 'motor_2ren' in df.columns and 'jyo_cd' in df.columns:
+        venue_motor_avg = df.groupby('jyo_cd')['motor_2ren'].transform('mean')
+        df['motor_venue_advantage'] = df['motor_2ren'] - venue_motor_avg
+    
+    # Boat performance relative to venue average
+    if 'boat_2ren' in df.columns and 'jyo_cd' in df.columns:
+        venue_boat_avg = df.groupby('jyo_cd')['boat_2ren'].transform('mean')
+        df['boat_venue_advantage'] = df['boat_2ren'] - venue_boat_avg
+    
+    # Combined equipment score
+    df['equipment_score'] = (
+        df.get('motor_2ren', 0).fillna(30) * 0.6 + 
+        df.get('boat_2ren', 0).fillna(30) * 0.4
+    )
+    
+    # Equipment rank in race
+    for (date, jyo, race), group in df.groupby(['date', 'jyo_cd', 'race_no']):
+        idx = group.index
+        ranks = group['equipment_score'].rank(ascending=False)
+        df.loc[idx, 'equipment_rank'] = ranks
+    
+    return df
+
+
+def add_race_type_features(df):
+    """Add race type features (予選, 準決, 決勝, SG, etc.)"""
+    df = df.copy()
+    
+    df['is_final'] = 0
+    df['is_semifinal'] = 0
+    df['is_sg'] = 0
+    df['race_importance'] = 1.0
+    
+    if 'race_name' in df.columns:
+        race_names = df['race_name'].astype(str).str.lower()
+        
+        # Finals
+        df.loc[race_names.str.contains('優勝|決勝|ファイナル', na=False), 'is_final'] = 1
+        df.loc[df['is_final'] == 1, 'race_importance'] = 2.0
+        
+        # Semi-finals
+        df.loc[race_names.str.contains('準決|準優|セミ', na=False), 'is_semifinal'] = 1
+        df.loc[df['is_semifinal'] == 1, 'race_importance'] = 1.5
+        
+        # SG races
+        df.loc[race_names.str.contains('sg|グランプリ|クラシック|オールスター|メモリアル|ダービー', na=False), 'is_sg'] = 1
+        df.loc[df['is_sg'] == 1, 'race_importance'] = 2.5
+    
+    return df
+
+
+# Update FEATURES list
+EXTRA_FEATURES_V2 = [
+    'avg_opponent_winrate', 'winrate_advantage', 'is_top_racer_in_race',
+    'motor_venue_advantage', 'boat_venue_advantage', 'equipment_score', 'equipment_rank',
+    'is_final', 'is_semifinal', 'is_sg', 'race_importance'
+]

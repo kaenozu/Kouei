@@ -47,6 +47,14 @@ try:
 except ImportError:
     trifecta_router = None
 try:
+    from src.api.routers.wide import router as wide_router
+except ImportError:
+    wide_router = None
+try:
+    from src.api.routers.backtest import router as backtest_router
+except ImportError:
+    backtest_router = None
+try:
     from src.api.routers.concierge import router as concierge_router
 except ImportError:
     concierge_router = None
@@ -141,6 +149,10 @@ if smart_betting_router:
         app.include_router(exacta_router)
     if trifecta_router:
         app.include_router(trifecta_router)
+    if wide_router:
+        app.include_router(wide_router)
+    if backtest_router:
+        app.include_router(backtest_router)
     if concierge_router:
         app.include_router(concierge_router)
     try:

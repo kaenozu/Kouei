@@ -16,6 +16,11 @@ import { SettingsPanel } from './components/features/SettingsPanel';
 import SmartBets from './components/features/SmartBets';
 import ExactaBets from './components/features/ExactaBets';
 import TrifectaBets from './components/features/TrifectaBets';
+import BettingTypeTabs from './components/BettingTypeTabs';
+import EnhancedBacktest from './components/EnhancedBacktest';
+import ResultsTracker from './components/ResultsTracker';
+import WideBets from './components/features/WideBets';
+import PlaceBets from './components/features/PlaceBets';
 import UpcomingBets from './components/features/UpcomingBets';
 import { Brain, Activity, Users, Target, Microscope } from 'lucide-react';
 
@@ -885,6 +890,18 @@ const App = () => {
           <div className={`nav-item ${activeTab === 'trifecta' ? 'active' : ''}`} onClick={() => setActiveTab('trifecta')}>
             <Trophy size={22} /> 3連単予測
           </div>
+          <div className={`nav-item ${activeTab === 'wide' ? 'active' : ''}`} onClick={() => setActiveTab('wide')}>
+            🎪 ワイド予測
+          </div>
+          <div className={`nav-item ${activeTab === 'place' ? 'active' : ''}`} onClick={() => setActiveTab('place')}>
+            🎯 複勝予測
+          </div>
+          <div className={`nav-item ${activeTab === 'enhanced-backtest' ? 'active' : ''}`} onClick={() => setActiveTab('enhanced-backtest')}>
+            🔬 高度バックテスト
+          </div>
+          <div className={`nav-item ${activeTab === 'results' ? 'active' : ''}`} onClick={() => setActiveTab('results')}>
+            📋 結果追跡
+          </div>
           <div className={`nav-item ${activeTab === 'model-explainer' ? 'active' : ''}`} onClick={() => setActiveTab('model-explainer')}>
             <Brain size={22} /> モデル解釈
           </div>
@@ -1059,6 +1076,22 @@ const App = () => {
           <ExactaBets />
         ) : activeTab === 'trifecta' ? (
           <TrifectaBets />
+        ) : activeTab === 'wide' ? (
+          <div style={{ padding: '1rem' }}>
+            <WideBets />
+          </div>
+        ) : activeTab === 'place' ? (
+          <div style={{ padding: '1rem' }}>
+            <PlaceBets />
+          </div>
+        ) : activeTab === 'enhanced-backtest' ? (
+          <div style={{ padding: '1rem' }}>
+            <EnhancedBacktest />
+          </div>
+        ) : activeTab === 'results' ? (
+          <div style={{ padding: '1rem' }}>
+            <ResultsTracker />
+          </div>
         ) : activeTab === 'model-explainer' ? (
           <ModelExplainer />
         ) : activeTab === 'monitoring' ? (
