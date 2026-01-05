@@ -72,3 +72,45 @@ ADVANCED_FEATURES = [
     'venue_inner_bias', 'venue_sashi_bias',
     'race_competitiveness', 'is_top_racer'
 ]
+
+# Additional features for improvement
+def add_course_interaction_features(df):
+    """Add course-specific interaction features"""
+    df = df.copy()
+    
+    # 1号艇の脅威度（2-4号艇の強さ）
+    for (date, jyo, race), group in df.groupby(['date', 'jyo_cd', 'race_no']):
+        if len(group) < 6:
+            continue
+        
+        boat1 = group[group['boat_no'] == 1]
+        if len(boat1) == 0:
+            continue
+        
+        # 2-4号艇の平均勝率
+        inner_boats = group[group['boat_no'].isin([2, 3, 4])]
+        if len(inner_boats) > 0:
+            threat = inner_boats['racer_win_rate'].mean()
+            df.loc[group.index, 'inner_threat'] = threat
+            df.loc[boat1.index, 'boat1_threat_level'] = threat - boat1['racer_win_rate'].values[0]
+    
+    # 穴馬指数（低勝率選手の期待値）
+    df['upset_potential'] = (df['motor_2ren'] * 0.5 + df['boat_2ren'] * 0.5) / (df['racer_win_rate'] + 1)
+    
+    return df
+
+def add_st_prediction_features(df):
+    """Add start timing prediction features (simplified)"""
+    df = df.copy()
+    
+    # 展示タイムからSTを推定
+    if 'exhibition_time' in df.columns:
+        # 展示タイムが速い=ST良い傾向
+        mean_ex = df.groupby(['date', 'jyo_cd', 'race_no'])['exhibition_time'].transform('mean')
+        df['st_advantage'] = (mean_ex - df['exhibition_time']) / 0.1  # 0.1秒差で1ポイント
+    
+    return df
+
+EXTRA_FEATURES = [
+    'inner_threat', 'boat1_threat_level', 'upset_potential', 'st_advantage'
+]

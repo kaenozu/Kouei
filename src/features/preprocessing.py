@@ -29,7 +29,9 @@ FEATURES = [
     'motor_exhibition_synergy',
     'rough_outer_advantage', 'calm_inner_advantage',
     'venue_inner_bias', 'venue_sashi_bias',
-    'race_competitiveness', 'is_top_racer'
+    'race_competitiveness', 'is_top_racer',
+    # Course interaction features (new)
+    'inner_threat', 'boat1_threat_level', 'upset_potential', 'st_advantage'
 ]
 
 CAT_FEATURES = ['jyo_cd', 'boat_no', 'wind_direction', 'weather']
@@ -130,6 +132,9 @@ def preprocess(df, is_training=False):
     if HAS_ADVANCED:
         df = add_advanced_features(df)
     
+    # === COURSE INTERACTION FEATURES ===
+    df = add_course_interaction_features(df)
+    
     return df
 
 
@@ -160,5 +165,49 @@ def add_racer_course_features(df):
         lambda r: r['racer_course_win_rate'] - BASELINE.get(int(r['boat_no']), 0.1),
         axis=1
     )
+    
+    return df
+
+
+def add_course_interaction_features(df):
+    """Add course-specific interaction features for better prediction"""
+    df = df.copy()
+    
+    # Initialize new columns
+    df['inner_threat'] = 0.0
+    df['boat1_threat_level'] = 0.0
+    df['upset_potential'] = 0.0
+    df['st_advantage'] = 0.0
+    
+    # Group by race
+    for (date, jyo, race), group in df.groupby(['date', 'jyo_cd', 'race_no']):
+        if len(group) < 3:
+            continue
+        
+        idx = group.index
+        
+        # 1. Inner threat - strength of boats 2-4 (can challenge boat 1)
+        inner_boats = group[group['boat_no'].isin([2, 3, 4])]
+        if len(inner_boats) > 0:
+            inner_threat = inner_boats['racer_win_rate'].mean()
+            df.loc[idx, 'inner_threat'] = inner_threat
+            
+            # Boat 1's threat level (how much stronger are challengers)
+            boat1 = group[group['boat_no'] == 1]
+            if len(boat1) > 0:
+                boat1_rate = boat1['racer_win_rate'].values[0]
+                df.loc[boat1.index, 'boat1_threat_level'] = inner_threat - boat1_rate
+        
+        # 2. Upset potential - low win rate but good equipment
+        motor_avg = group['motor_2ren'].mean() if group['motor_2ren'].mean() > 0 else 30
+        boat_avg = group['boat_2ren'].mean() if group['boat_2ren'].mean() > 0 else 30
+        equipment_score = (group['motor_2ren'] / motor_avg + group['boat_2ren'] / boat_avg) / 2
+        df.loc[idx, 'upset_potential'] = equipment_score / (group['racer_win_rate'] / 5 + 0.5)
+        
+        # 3. ST advantage from exhibition time
+        if 'exhibition_time' in group.columns:
+            mean_ex = group['exhibition_time'].mean()
+            if mean_ex > 0:
+                df.loc[idx, 'st_advantage'] = (mean_ex - group['exhibition_time']) / 0.1
     
     return df
