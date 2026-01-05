@@ -109,7 +109,8 @@ def backtest_race_batch(races_data: List[tuple], strategy: str, bet_amount: int)
 
 def backtest_single_race(group: pd.DataFrame, strategy: str, bet_amount: int) -> Optional[Dict]:
     """Backtest a single race"""
-    if len(group) < 2:
+    min_boats = 3 if strategy == 'trifecta' else 2
+    if len(group) < min_boats:
         return None
     
     sorted_group = group.sort_values('pred_prob', ascending=False)
