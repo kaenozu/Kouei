@@ -39,6 +39,10 @@ except ImportError:
     smart_betting_router = None
     from src.api.routers.collection import router as collection_router
 try:
+    from src.api.routers.exacta import router as exacta_router
+except ImportError:
+    exacta_router = None
+try:
     from src.api.routers.concierge import router as concierge_router
 except ImportError:
     concierge_router = None
@@ -129,6 +133,8 @@ if smart_betting_router:
     from src.api.routers.collection import router as collection_router
     app.include_router(smart_betting_router)
     from src.api.routers.collection import router as collection_router
+    if exacta_router:
+        app.include_router(exacta_router)
     if concierge_router:
         app.include_router(concierge_router)
     try:

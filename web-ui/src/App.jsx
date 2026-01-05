@@ -14,6 +14,7 @@ import PredictionAccuracy from './components/features/PredictionAccuracy';
 import { NotificationCenter } from './components/features/NotificationCenter';
 import { SettingsPanel } from './components/features/SettingsPanel';
 import SmartBets from './components/features/SmartBets';
+import ExactaBets from './components/features/ExactaBets';
 import UpcomingBets from './components/features/UpcomingBets';
 import { Brain, Activity, Users, Target, Microscope } from 'lucide-react';
 
@@ -877,6 +878,9 @@ const App = () => {
           <div className={`nav-item ${activeTab === 'highvalue' ? 'active' : ''}`} onClick={() => setActiveTab('highvalue')}>
             <Target size={22} /> 高確率レース
           </div>
+          <div className={`nav-item ${activeTab === 'exacta' ? 'active' : ''}`} onClick={() => setActiveTab('exacta')}>
+            <Zap size={22} /> 2連単予測
+          </div>
           <div className={`nav-item ${activeTab === 'model-explainer' ? 'active' : ''}`} onClick={() => setActiveTab('model-explainer')}>
             <Brain size={22} /> モデル解釈
           </div>
@@ -1047,6 +1051,8 @@ const App = () => {
           renderRacerTracker()
         ) : activeTab === 'highvalue' ? (
           <SmartBets />
+        ) : activeTab === 'exacta' ? (
+          <ExactaBets />
         ) : activeTab === 'model-explainer' ? (
           <ModelExplainer />
         ) : activeTab === 'monitoring' ? (
