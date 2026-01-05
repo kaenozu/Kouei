@@ -18,6 +18,7 @@ import ExactaBets from './components/features/ExactaBets';
 import TrifectaBets from './components/features/TrifectaBets';
 import BettingTypeTabs from './components/BettingTypeTabs';
 import EnhancedBacktest from './components/EnhancedBacktest';
+import ValueBets from './components/features/ValueBets';
 import ResultsTracker from './components/ResultsTracker';
 import WideBets from './components/features/WideBets';
 import PlaceBets from './components/features/PlaceBets';
@@ -902,6 +903,9 @@ const App = () => {
           <div className={`nav-item ${activeTab === 'results' ? 'active' : ''}`} onClick={() => setActiveTab('results')}>
             📋 結果追跡
           </div>
+          <div className={`nav-item ${activeTab === 'value-bets' ? 'active' : ''}`} onClick={() => setActiveTab('value-bets')}>
+            💰 バリューベット
+          </div>
           <div className={`nav-item ${activeTab === 'model-explainer' ? 'active' : ''}`} onClick={() => setActiveTab('model-explainer')}>
             <Brain size={22} /> モデル解釈
           </div>
@@ -1091,6 +1095,10 @@ const App = () => {
         ) : activeTab === 'results' ? (
           <div style={{ padding: '1rem' }}>
             <ResultsTracker />
+          </div>
+        ) : activeTab === 'value-bets' ? (
+          <div style={{ padding: '1rem' }}>
+            <ValueBets />
           </div>
         ) : activeTab === 'model-explainer' ? (
           <ModelExplainer />
