@@ -268,11 +268,13 @@ def update_results_from_dataframe(df):
     updated = 0
     # Get races with results (rank column)
     if 'rank' in df.columns:
-        results = df[df['rank'] == 1][['date', 'jyo_cd', 'race_no', 'boat_no']].drop_duplicates()
+        import pandas as pd
+        df['rank_num'] = pd.to_numeric(df['rank'], errors='coerce')
+        results = df[df['rank_num'] == 1][['date', 'jyo_cd', 'race_no', 'boat_no']].drop_duplicates()
         
         for _, row in results.iterrows():
-            date = str(row['date'])
-            jyo_cd = str(row['jyo_cd']).zfill(2)
+            date = str(int(row['date']))
+            jyo_cd = str(int(row['jyo_cd'])).zfill(2)
             race_no = int(row['race_no'])
             winner = int(row['boat_no'])
             
