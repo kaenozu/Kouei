@@ -9,6 +9,12 @@ from collections import defaultdict
 
 router = APIRouter(prefix="/api/backtest", tags=["backtest"])
 
+def safe_float(val, default=0.0):
+    """Convert to float, handling NaN/inf"""
+    if pd.isna(val) or val != val or val == float('inf') or val == float('-inf'):
+        return default
+    return float(val)
+
 VENUE_NAMES = {
     "01": "桐生", "02": "戸田", "03": "江戸川", "04": "平和島", "05": "多摩川",
     "06": "浜名湖", "07": "蒲郡", "08": "常滑", "09": "津", "10": "三国",
@@ -125,14 +131,14 @@ async def comprehensive_backtest(
             continue
         
         total_bets += 1
-        total_return += result["return"]
+        total_return += safe_float(result["return"])
         if result["hit"]:
             total_wins += 1
         
         # Track by date
         date_str = str(date)
         daily_results[date_str]["bets"] += 1
-        daily_results[date_str]["return"] += result["return"]
+        daily_results[date_str]["return"] += safe_float(result["return"])
         if result["hit"]:
             daily_results[date_str]["wins"] += 1
         
@@ -140,13 +146,13 @@ async def comprehensive_backtest(
         jyo_str = str(jyo).zfill(2)
         venue_name = VENUE_NAMES.get(jyo_str, jyo_str)
         venue_results[venue_name]["bets"] += 1
-        venue_results[venue_name]["return"] += result["return"]
+        venue_results[venue_name]["return"] += safe_float(result["return"])
         if result["hit"]:
             venue_results[venue_name]["wins"] += 1
         
         # Track by confidence
         confidence_results[conf]["bets"] += 1
-        confidence_results[conf]["return"] += result["return"]
+        confidence_results[conf]["return"] += safe_float(result["return"])
         if result["hit"]:
             confidence_results[conf]["wins"] += 1
     
