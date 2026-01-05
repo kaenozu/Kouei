@@ -15,9 +15,15 @@ import { NotificationCenter } from './components/features/NotificationCenter';
 import { SettingsPanel } from './components/features/SettingsPanel';
 import SmartBets from './components/features/SmartBets';
 import UpcomingBets from './components/features/UpcomingBets';
+import { Brain, Activity, Users, Target, Microscope } from 'lucide-react';
 
 const App = () => {
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState(() => {
+    // URLハッシュから初期タブを設定
+    const hash = window.location.hash.replace('#/', '');
+    const validTabs = ['dashboard', 'selection', 'portfolio', 'today', 'backtest', 'analytics', 'racer', 'highvalue', 'model-explainer', 'monitoring', 'tools', 'settings'];
+    return validTabs.includes(hash) ? hash : 'dashboard';
+  });
   const [params, setParams] = useState({ date: new Date().toISOString().split('T')[0].replace(/-/g, ''), jyo: '02', race: 1 });
   const [predictions, setPredictions] = useState([]);
   const [aiFocus, setAiFocus] = useState(null);
@@ -863,13 +869,13 @@ const App = () => {
             <BarChart3 size={22} /> バックテスト・ラボ
           </div>
           <div className={`nav-item ${activeTab === 'analytics' ? 'active' : ''}`} onClick={() => setActiveTab('analytics')}>
-            <TrendingUp size={22} /> 分析ダッシュボード
+            <BarChart3 size={22} /> 分析ダッシュボード
           </div>
           <div className={`nav-item ${activeTab === 'racer' ? 'active' : ''}`} onClick={() => setActiveTab('racer')}>
             🏆 選手追跡
           </div>
           <div className={`nav-item ${activeTab === 'highvalue' ? 'active' : ''}`} onClick={() => setActiveTab('highvalue')}>
-            🎯 高確率レース
+            <Target size={22} /> 高確率レース
           </div>
           <div className={`nav-item ${activeTab === 'model-explainer' ? 'active' : ''}`} onClick={() => setActiveTab('model-explainer')}>
             <Brain size={22} /> モデル解釈
@@ -878,7 +884,7 @@ const App = () => {
             <Activity size={22} /> リアルタイム監視
           </div>
           <div className={`nav-item ${activeTab === 'tools' ? 'active' : ''}`} onClick={() => setActiveTab('tools')}>
-            🔬 AI Tools
+            <Microscope size={22} /> AI Tools
           </div>
           <div className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveTab('settings')}>
             <Settings size={22} /> 設定
@@ -1511,4 +1517,3 @@ const App = () => {
 };
 
 export default App;
-import SmartBettingDashboard from './components/SmartBettingDashboard';
