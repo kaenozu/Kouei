@@ -8,6 +8,13 @@ except ImportError:
     HAS_ADVANCED = False
     ADVANCED_FEATURES = []
 
+try:
+    from src.features.seasonal_features import add_seasonal_features, SEASONAL_FEATURES
+    HAS_SEASONAL = True
+except ImportError:
+    HAS_SEASONAL = False
+    SEASONAL_FEATURES = []
+
 # Standard feature list used by the current model
 # Model-compatible features (41 features)
 FEATURES = [
@@ -143,6 +150,10 @@ def preprocess(df, is_training=False):
     # === ADVANCED FEATURES ===
     if HAS_ADVANCED:
         df = add_advanced_features(df)
+    
+    # === SEASONAL FEATURES ===
+    if HAS_SEASONAL:
+        df = add_seasonal_features(df)
     
     # === COURSE INTERACTION FEATURES ===
     df = add_course_interaction_features(df)
@@ -327,4 +338,12 @@ EXTRA_FEATURES_V2 = [
     'avg_opponent_winrate', 'winrate_advantage', 'is_top_racer_in_race',
     'motor_venue_advantage', 'boat_venue_advantage', 'equipment_score', 'equipment_rank',
     'is_final', 'is_semifinal', 'is_sg', 'race_importance'
+]
+
+# Seasonal features for V3 model
+SEASONAL_FEATURES_LIST = [
+    'month', 'is_winter', 'is_spring', 'is_summer', 'is_autumn',
+    'temp_deviation', 'temp_zscore_seasonal', 'water_temp_deviation',
+    'temp_venue_adjusted', 'temp_anomaly', 'winter_outer_advantage',
+    'summer_speed_factor', 'temp_exhibition_interaction'
 ]

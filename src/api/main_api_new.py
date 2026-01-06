@@ -73,6 +73,10 @@ try:
     from src.api.routers.odds_integration import router as odds_integration_router
 except ImportError:
     odds_integration_router = None
+try:
+    from src.api.routers.retrain import router as retrain_router
+except ImportError:
+    retrain_router = None
 from src.api.dependencies import get_predictor, get_dataframe
 from src.api.routers.system import broadcast_event, active_connections
 from src.api.routers.sync import run_sync, last_sync_time
@@ -165,6 +169,8 @@ if smart_betting_router:
         app.include_router(backtest_v2_router)
     if odds_integration_router:
         app.include_router(odds_integration_router)
+    if retrain_router:
+        app.include_router(retrain_router)
     if concierge_router:
         app.include_router(concierge_router)
     try:

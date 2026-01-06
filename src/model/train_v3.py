@@ -199,6 +199,15 @@ def train_ensemble_v3(output_dir="models", n_splits=5, use_v3_features=True):
         'fast_exhibition', 'slow_exhibition', 'field_strength_std', 'is_competitive_race'
     ]
     
+    # Seasonal features (V3.1)
+    seasonal_features = [
+        'month', 'is_winter', 'is_spring', 'is_summer', 'is_autumn',
+        'temp_deviation', 'temp_zscore_seasonal', 'water_temp_deviation',
+        'temp_venue_adjusted', 'temp_anomaly', 'winter_outer_advantage',
+        'summer_speed_factor', 'temp_exhibition_interaction'
+    ]
+    v3_features = v3_features + seasonal_features
+    
     all_features = FEATURES + [f for f in v3_features if f in processed.columns]
     available_features = [f for f in all_features if f in processed.columns]
     
