@@ -217,3 +217,70 @@ curl -X POST http://localhost:8000/api/betting/optimize \
     "kelly_fraction": 0.5
   }'
 ```
+
+---
+
+## 追加実装 (2026-01-06)
+
+### 6. 季節特徴量 (Seasonal Features)
+
+#### 6.1 新特徴量
+- `season_sin`, `season_cos`: 季節の周期的エンコーディング
+- `is_winter`, `is_summer`: 冬季/夏季フラグ
+- `month`, `day_of_week`: 月/曜日
+- `daylight_proxy`: 日照時間の代理変数
+- `temperature`, `humidity`: 気温・湿度（データがある場合）
+
+#### 6.2 実装ファイル
+- `src/features/seasonal_features.py`
+- `src/features/preprocessing.py`（統合）
+
+### 7. 自動再トレーニングパイプライン
+
+#### 7.1 機能
+- ドリフト検出時の自動再トレーニング
+- スケジュール実行（週次/月次）
+- モデルバックアップ・ロールバック
+
+#### 7.2 API
+| エンドポイント | メソッド | 説明 |
+|------------|--------|------|
+| `/api/retrain/status` | GET | 再トレーニング状態確認 |
+| `/api/retrain/trigger` | POST | 手動トリガー |
+| `/api/retrain/schedule` | POST | スケジュール設定 |
+
+#### 7.3 実装ファイル
+- `src/model/auto_retrain.py`
+- `src/api/routers/retrain.py`
+
+### 8. LLM予測説明機能 (LLM Explainer)
+
+#### 8.1 機能
+- SHAP値を人間が理解しやすい日本語説明に変換
+- OpenAI/Anthropic API対応（オプション）
+- ルールベースのフォールバック
+- レース全体のサマリー生成
+
+#### 8.2 API
+| エンドポイント | メソッド | 説明 |
+|------------|--------|------|
+| `/api/explain/status` | GET | 説明機能の状態 |
+| `/api/explain/race` | POST | レース予測の説明生成 |
+| `/api/explain/single` | POST | 単一予測の説明 |
+| `/api/explain/features` | GET | 特徴量の日本語訳一覧 |
+
+#### 8.3 実装ファイル
+- `src/inference/llm_explainer.py`
+- `src/api/routers/explainer.py`
+- `web-ui/src/components/PredictionExplainer.jsx`
+
+### 新規ファイル一覧
+
+```
+src/features/seasonal_features.py   # 季節特徴量
+src/model/auto_retrain.py           # 自動再トレーニング
+src/api/routers/retrain.py          # 再トレーニングAPI
+src/inference/llm_explainer.py      # LLM説明生成
+src/api/routers/explainer.py        # 説明API
+web-ui/src/components/PredictionExplainer.jsx  # 説明UIコンポーネント
+```
