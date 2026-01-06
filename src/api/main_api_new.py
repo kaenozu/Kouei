@@ -78,6 +78,10 @@ try:
 except ImportError:
     retrain_router = None
 from src.api.dependencies import get_predictor, get_dataframe
+try:
+    from src.api.routers.explainer import router as explainer_router
+except ImportError:
+    explainer_router = None
 from src.api.routers.system import broadcast_event, active_connections
 from src.api.routers.sync import run_sync, last_sync_time
 from bs4 import BeautifulSoup
@@ -169,6 +173,8 @@ if smart_betting_router:
         app.include_router(backtest_v2_router)
     if odds_integration_router:
         app.include_router(odds_integration_router)
+    if explainer_router:
+        app.include_router(explainer_router)
     if retrain_router:
         app.include_router(retrain_router)
     if concierge_router:
