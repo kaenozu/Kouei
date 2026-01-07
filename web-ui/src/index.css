@@ -1,9 +1,9 @@
 :root {
-  --bg-dark: #05060b;
-  --bg-surface: #0f111a;
-  --glass-border: rgba(255, 255, 255, 0.12);
-  --glass-highlight: rgba(255, 255, 255, 0.05);
-  --glass-glow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  --bg-dark: #020408;
+  --bg-surface: #0a0c14;
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-highlight: rgba(255, 255, 255, 0.03);
+  --glass-glow: 0 8px 32px 0 rgba(0, 0, 0, 0.6);
 
   --primary: #00f2ff;
   --primary-glow: rgba(0, 242, 255, 0.3);
@@ -13,22 +13,25 @@
   --accent-pink: #ff0099;
 
   --spring-easing: cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  --glass-blur: blur(40px);
-  --neon-border: 1px solid rgba(0, 242, 255, 0.2);
+  --glass-blur: blur(25px);
+  --neon-border: 1px solid rgba(0, 242, 255, 0.15);
 
-  --text-main: #f0f2f5;
-  --text-dim: #b0b3b8;
-  --text-muted: #8a8d91;
+  --text-main: #f8fafc;
+  --text-dim: #94a3b8;
+  --text-muted: #64748b;
 
-  --success: #00ff88;
-  --error: #ff4d4d;
+  --success: #10b981;
+  --error: #ef4444;
 
   --boat-1: #ffffff;
-  --boat-2: #1a1a1a;
-  --boat-3: #ff4d4d;
-  --boat-4: #3d7cff;
-  --boat-5: #ffcc00;
-  --boat-6: #00b33c;
+  --boat-2: #1e293b;
+  --boat-3: #f43f5e;
+  --boat-4: #3b82f6;
+  --boat-5: #eab308;
+  --boat-6: #10b981;
+
+  --sidebar-width: 280px;
+  --sidebar-collapsed-width: 80px;
 }
 
 * {
@@ -78,17 +81,29 @@ body::before {
 }
 
 .sidebar {
-  width: 280px;
-  background: rgba(10, 11, 18, 0.8);
-  backdrop-filter: blur(20px);
+  width: var(--sidebar-width);
+  background: rgba(5, 7, 12, 0.85);
+  backdrop-filter: var(--glass-blur);
   border-right: 1px solid var(--glass-border);
-  padding: 2.5rem 1.5rem;
+  padding: 2rem 1rem;
   display: flex;
   flex-direction: column;
-  gap: 2.5rem;
+  gap: 2rem;
   position: sticky;
   top: 0;
   height: 100vh;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 50;
+}
+
+.sidebar.collapsed {
+  width: var(--sidebar-collapsed-width);
+}
+
+.sidebar.collapsed h1,
+.sidebar.collapsed .nav-text,
+.sidebar.collapsed .sidebar-footer {
+  display: none;
 }
 
 .sidebar h1 {
@@ -133,35 +148,100 @@ body::before {
   padding: 2.5rem;
   display: flex;
   flex-direction: column;
-  gap: 2.5rem;
-  max-width: 1400px;
-  margin: 0 auto;
+  gap: 2rem;
+  max-width: 100%;
+  margin: 0;
   width: 100%;
+  transition: padding 0.3s ease;
+  overflow-x: hidden;
 }
 
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-  gap: 2rem;
+@media (max-width: 1024px) {
+  .main-content {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard {
+    flex-direction: column !important;
+  }
+
+  .sidebar,
+  aside.sidebar,
+  aside.sidebar.collapsed {
+    width: 100% !important;
+    height: auto !important;
+    position: sticky !important;
+    top: 0;
+    padding: 0.5rem 1rem !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    overflow-x: auto;
+    border-right: none !important;
+    border-bottom: 1px solid var(--glass-border) !important;
+    gap: 0.5rem !important;
+    z-index: 100 !important;
+  }
+
+  .sidebar h1,
+  .sidebar.collapsed h1 {
+    display: block !important;
+    font-size: 1rem !important;
+    margin: 0 !important;
+    white-space: nowrap;
+    padding: 0 !important;
+  }
+
+  .sidebar .nav-list {
+    flex-direction: row !important;
+    gap: 0.25rem !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .nav-item {
+    padding: 0.4rem 0.6rem !important;
+    white-space: nowrap;
+    font-size: 0.8rem !important;
+    border-radius: 8px !important;
+  }
+
+  .nav-text,
+  .sidebar-footer,
+  button[onClick] {
+    display: none !important;
+  }
+
+  .main-content {
+    padding: 1rem !important;
+    gap: 1.5rem !important;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
 }
 
 .card {
-  background: var(--card-bg);
+  background: linear-gradient(135deg, rgba(15, 17, 26, 0.4), rgba(10, 11, 18, 0.6));
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   border: var(--neon-border);
-  border-radius: 28px;
-  padding: 2.25rem;
+  border-radius: 24px;
+  padding: 2rem;
   box-shadow: var(--glass-glow);
-  transition: all 0.5s var(--spring-easing);
+  transition: all 0.4s var(--spring-easing);
   position: relative;
   overflow: hidden;
 }
 
 .card:hover {
   border-color: var(--primary);
-  box-shadow: 0 15px 45px rgba(0, 242, 255, 0.15);
-  transform: translateY(-8px) scale(1.01);
+  box-shadow: 0 20px 50px rgba(0, 242, 255, 0.1);
+  transform: translateY(-4px);
 }
 
 .card::before {
@@ -326,9 +406,10 @@ body::before {
 }
 
 .racer-name {
-  font-weight: 600;
+  font-weight: 800;
   color: var(--text-main);
-  font-size: 1rem;
+  font-size: 1.1rem;
+  letter-spacing: 0.5px;
 }
 
 .prob-pct {
@@ -353,6 +434,88 @@ body::before {
   box-shadow: 0 4px 15px rgba(0, 242, 255, 0.3);
 }
 
+/* Dashboard specific responsive styles */
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  gap: 1.5rem;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.header-title h2 {
+  font-size: 2.2rem;
+  font-weight: 900;
+  letter-spacing: -1px;
+}
+
+.header-title p {
+  color: var(--text-dim);
+  font-size: 1rem;
+  margin-top: 0.25rem;
+}
+
+.header-actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.date-badge {
+  background: var(--glass-highlight);
+  padding: 0.5rem 1rem;
+  border-radius: 14px;
+  border: 1px solid var(--glass-border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header-date-input {
+  background: transparent !important;
+  border: none !important;
+  padding: 0.25rem !important;
+  width: 90px;
+  font-weight: 700;
+  text-align: center;
+}
+
+@media (max-width: 1024px) {
+  .dashboard-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1.5rem;
+  }
+
+  .header-actions {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 768px) {
+  .header-title h2 {
+    font-size: 1.75rem !important;
+  }
+
+  .header-title p {
+    font-size: 0.85rem !important;
+  }
+
+  .header-actions {
+    gap: 0.75rem !important;
+  }
+
+  .btn-primary {
+    padding: 0.5rem 1rem !important;
+    font-size: 0.85rem !important;
+    width: auto !important;
+  }
+}
+
 .btn-primary:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(0, 242, 255, 0.5);
@@ -369,6 +532,678 @@ body::before {
 }
 
 .input-field:focus {
+  /* test */
   border-color: var(--primary);
   background: rgba(255, 255, 255, 0.05);
+}
+/* Today's Races View */
+.today-races-container {
+  padding: 1rem;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.today-races-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 2.5rem;
+  border-bottom: 1px solid var(--glass-border);
+  padding-bottom: 1.5rem;
+}
+
+.today-races-title {
+  font-size: 2.8rem;
+  font-weight: 900;
+  letter-spacing: -1px;
+  margin-bottom: 0.2rem;
+  background: linear-gradient(to right, #fff, var(--text-dim));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.today-races-subtitle {
+  color: var(--text-dim);
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.race-count-badge {
+  text-align: right;
+  color: var(--primary);
+  font-weight: 800;
+  font-size: 0.9rem;
+  letter-spacing: 1px;
+}
+
+.race-grid {
+  display: grid;
+  gap: 1.25rem;
+  max-width: 1000px;
+}
+
+.race-card-container-main {
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 20px;
+  min-height: 120px;
+  position: relative;
+  background: linear-gradient(135deg, var(--card-bg), rgba(255, 255, 255, 0.03));
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.race-card-container-main.finished {
+  opacity: 0.6;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: none;
+}
+
+.race-card-container-main:hover:not(.finished) {
+  border-color: var(--primary);
+  box-shadow: 0 15px 40px rgba(0, 242, 255, 0.15);
+  transform: translateY(-4px);
+}
+
+.time-section {
+  width: 160px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border-right: 1px solid var(--glass-border);
+  padding: 1rem;
+  position: relative;
+  background: rgba(0, 242, 255, 0.05);
+}
+
+.finished .time-section {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.time-section-accent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--primary);
+  box-shadow: 0 0 15px var(--primary);
+}
+
+.time-label {
+  font-size: 0.75rem;
+  font-weight: 900;
+  color: var(--text-muted);
+  margin-bottom: 0.4rem;
+  letter-spacing: 2px;
+}
+
+.time-value {
+  font-size: 2.8rem;
+  font-weight: 950;
+  color: var(--text-main);
+  font-family: 'Outfit', 'Inter', monospace;
+  line-height: 1;
+  letter-spacing: -1px;
+}
+
+.finished .time-value {
+  color: var(--text-muted);
+}
+
+.race-card-content {
+  flex: 1;
+  padding: 1.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.stadium-name-text {
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: var(--text-main);
+  letter-spacing: -0.5px;
+}
+
+.race-no-badge {
+  background: var(--primary);
+  color: #000;
+  padding: 2px 10px;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 900;
+  box-shadow: 0 4px 12px rgba(0, 242, 255, 0.3);
+}
+
+.race-name-info {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.race-name-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--secondary);
+}
+
+.race-name-label {
+  font-size: 1.1rem;
+  color: var(--text-dim);
+  font-weight: 700;
+}
+
+.status-info-section {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-end;
+}
+
+.status-badge-custom {
+  padding: 0.4rem 1rem;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.8rem;
+  font-weight: 900;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+}
+
+.status-badge-custom.ready {
+  background: rgba(0, 255, 163, 0.15);
+  color: var(--success);
+  border-color: rgba(0, 255, 163, 0.4);
+}
+
+.status-badge-custom.finished {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-muted);
+  border-color: transparent;
+}
+
+.ai-analysis-indicator {
+  font-size: 0.7rem;
+  color: var(--primary);
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.racer-mini-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0.75rem;
+}
+
+.racer-mini-card {
+  background: rgba(255, 255, 255, 0.03);
+  padding: 0.5rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: relative;
+  overflow: hidden;
+}
+
+.racer-mini-name {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.racer-mini-rank {
+  font-size: 0.6rem;
+  font-weight: 900;
+}
+
+.racer-mini-rank.rank-a {
+  color: var(--success);
+}
+
+.motor-mini-rank {
+  font-size: 0.6rem;
+  font-weight: 900;
+}
+
+.motor-mini-rank.rank-a {
+  color: var(--primary);
+}
+
+.race-action-section {
+  width: 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.01);
+  border-left: 1px solid var(--glass-border);
+  color: var(--primary);
+  gap: 4px;
+}
+
+.finished .race-action-section {
+  color: var(--text-muted);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Dashboard Specific Classes */
+.notifications-container {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  max-width: 300px;
+  padding: 0.5rem 0;
+}
+
+.notification-badge {
+  background: var(--glass-highlight);
+  padding: 0.5rem 1rem;
+  border-radius: 12px;
+  border: 1px solid var(--glass-border);
+  font-size: 0.7rem;
+  white-space: nowrap;
+  animation: row-entry 0.3s ease;
+}
+
+.notification-badge.urgent {
+  background: rgba(255, 100, 100, 0.2);
+}
+
+.date-label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  fontWeight: 700;
+}
+
+.ai-recommendation-card {
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--primary);
+  background: linear-gradient(90deg, rgba(0, 242, 255, 0.05), transparent);
+}
+
+.ai-recommendation-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.ai-icon-wrapper {
+  padding: 0.75rem;
+  background: var(--glass-highlight);
+  border-radius: 12px;
+  color: var(--primary);
+}
+
+.ai-highlight-text {
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.reliability-label {
+  fontSize: 0.7rem;
+  color: var(--text-muted);
+}
+
+.reliability-value {
+  fontSize: 1.1rem;
+  fontWeight: 900;
+  color: var(--success);
+}
+
+.user-status-grid {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+  animation: row-entry 1s ease;
+}
+
+.user-rank-card {
+  flex: 1;
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.rank-icon-wrapper {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ffd700, #ff8c00);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+}
+
+.rank-level-text {
+  fontSize: 1.25rem;
+  fontWeight: 900;
+  color: var(--text-main);
+}
+
+.exp-bar-container {
+  width: 200px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+  margin-top: 6px;
+  overflow: hidden;
+}
+
+.exp-bar-fill {
+  height: 100%;
+  background: var(--primary);
+  box-shadow: 0 0 10px var(--primary);
+}
+
+.badges-container {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.user-badge-item {
+  fontSize: 0.7rem;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--glass-border);
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.prediction-results-label {
+  fontSize: 0.75rem;
+  color: var(--primary);
+  fontWeight: 800;
+  textTransform: uppercase;
+  letterSpacing: 2px;
+  marginBottom: 0.5rem;
+}
+
+.prediction-results-title {
+  fontSize: 2.2rem;
+  fontWeight: 900;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-main);
+}
+
+.race-name-badge-custom {
+  fontSize: 1rem;
+  color: var(--text-dim);
+  background: var(--glass-highlight);
+  padding: 4px 12px;
+  borderRadius: 10px;
+  marginLeft: 8px;
+}
+
+.viz-toggle-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+}
+
+.accel-ready-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--success);
+  fontSize: 0.75rem;
+  fontWeight: 800;
+}
+
+.virtual-engine-card {
+  height: 350px;
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  border: 2px solid var(--primary);
+  position: relative;
+  overflow: hidden;
+}
+
+.recommended-focus-container {
+  margin-bottom: 2rem;
+  padding: 1.25rem;
+  background: linear-gradient(135deg, rgba(0, 242, 255, 0.08), rgba(255, 0, 234, 0.05));
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.confidence-badge {
+  padding: 4px 12px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 900;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.confidence-s { background: var(--secondary); color: #000; }
+.confidence-a { background: var(--primary); color: #000; }
+.confidence-other { background: var(--glass-highlight); color: var(--text-main); }
+
+.Kelly-bet-amount {
+  fontWeight: 800;
+  color: var(--success);
+}
+
+/* What-If Panel Specific */
+.what-if-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2.5rem;
+}
+
+.what-if-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.what-if-subtitle {
+  color: var(--text-dim);
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+}
+
+.what-if-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+}
+
+.what-if-label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.what-if-slider {
+  width: 100%;
+}
+
+.what-if-action-container {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-simulate {
+  width: 200px;
+}
+
+/* Race Selection Specific */
+.selection-container {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+  max-width: 1000px;
+  animation: row-entry 0.5s ease;
+}
+
+.selection-step-header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 2rem;
+}
+
+.step-number {
+  color: #000;
+  font-weight: 900;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+}
+
+.step-number.primary { background: var(--primary); }
+.step-number.secondary { background: var(--secondary); }
+
+.step-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin: 0;
+  color: var(--text-main);
+}
+
+.stadium-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 1rem;
+}
+
+.stadium-item {
+  padding: 1.25rem 1rem;
+  text-align: center;
+  background: var(--glass-highlight);
+  color: var(--text-main);
+  border-radius: 16px;
+  border: 1px solid var(--glass-border);
+  cursor: pointer;
+  font-weight: 800;
+  font-size: 1rem;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.stadium-item.active {
+  background: var(--primary);
+  color: #000;
+  border-color: var(--primary);
+  box-shadow: 0 0 20px var(--primary-glow);
+}
+
+.race-selection-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 1.25rem;
+  max-width: 650px;
+}
+
+.race-number-item {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--glass-highlight);
+  color: var(--text-main);
+  border-radius: 50%;
+  border: 1px solid var(--glass-border);
+  cursor: pointer;
+  font-weight: 900;
+  font-size: 1.5rem;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.race-number-item.active {
+  background: linear-gradient(135deg, var(--secondary), var(--accent-pink));
+  color: #fff;
+  border-color: var(--secondary);
+  box-shadow: 0 0 20px var(--secondary-glow);
+  opacity: 1 !important;
+}
+
+.race-number-item.finished {
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text-muted);
+  border-color: transparent;
+  opacity: 0.6;
+}
+
+.race-start-time-mini {
+  position: absolute;
+  top: 12%;
+  font-size: 0.7rem;
+  font-weight: 700;
+  opacity: 0.8;
+}
+
+.race-status-icons {
+  position: absolute;
+  bottom: 12%;
+  display: flex;
+}
+
+.selection-info-footer {
+  margin-top: 1rem;
+  border-style: dashed;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.current-selection-text {
+  color: var(--text-dim);
+  font-size: 1.1rem;
+}
+
+.selection-highlight {
+  color: var(--primary);
+  font-size: 1.25rem;
+}
+
+.btn-confirm-selection {
+  margin-top: 1.5rem;
+  font-size: 1.1rem;
+  padding: 1rem 3rem;
 }

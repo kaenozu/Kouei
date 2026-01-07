@@ -74,15 +74,22 @@ class ProgramParser:
             
             # 2. Racer Info
             # The racer name and ID are in the next td
-            profile_node = tbody.find('a', href=re.compile(r'toban=\d+'))
+            # There might be multiple links with toban (image and name). 
+            # We want the one with text.
+            profile_links = tbody.find_all('a', href=re.compile(r'toban=\d+'))
             racer_name = ""
             racer_id = ""
-            if profile_node:
-                racer_name = profile_node.get_text(strip=True)
-                href = profile_node['href']
+            
+            for link in profile_links:
+                href = link['href']
                 match = re.search(r'toban=(\d+)', href)
                 if match:
-                    racer_id = match.group(1)
+                    racer_id = match.group(1) # ID is valid from any link
+                
+                text = link.get_text(strip=True)
+                if text:
+                    racer_name = text.replace('\u3000', ' ') # Normalize spaces
+                    break # Found the name
             
             # 3. Motor and Boat stats
             # These are in the subsequent tds.
@@ -117,6 +124,23 @@ class ProgramParser:
             nationwide_parts = nationwide_text.split()
             racer_win_rate = nationwide_parts[0] if len(nationwide_parts) > 0 else None
             
+            # Racer Rank (in td[2])
+            # Content examples: "4144 / A2", "埼玉 / 52kg" ... often mixed.
+            # Usually strict format: ID / Rank / Branch / Weight / Age
+            # But get_text(" ", strip=True) might merge them.
+            # Looking for A1, A2, B1, B2 pattern.
+            profile_text = tds[2].get_text(" ", strip=True) if len(tds) > 2 else ""
+            match_rank = re.search(r'(A1|A2|B1|B2)', profile_text)
+            racer_rank = match_rank.group(1) if match_rank else None
+
+            # Average ST (in td[3])
+            # Content examples: "F0 L0 0.19"
+            fl_text = tds[3].get_text(" ", strip=True) if len(tds) > 3 else ""
+            # looking for 0.XX
+            match_st = re.search(r'(\d\.\d{2})', fl_text)
+            average_st = float(match_st.group(1)) if match_st else None
+            
+
             motor_text = tds[6].get_text(" ", strip=True) if len(tds) > 6 else ""
             motor_parts = motor_text.split()
             motor_no = motor_parts[0] if len(motor_parts) > 0 else None
@@ -134,6 +158,8 @@ class ProgramParser:
                 'boat_no': boat_no, # Wakuban (1-6)
                 'racer_id': racer_id,
                 'racer_name': racer_name,
+                'racer_rank': racer_rank,
+                'average_st': average_st,
                 'racer_win_rate': racer_win_rate,
                 'motor_no': motor_no,
                 'motor_2ren': motor_2ren,

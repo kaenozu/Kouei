@@ -16,21 +16,52 @@ class OddsParser:
         # Actually, boatrace.jp uses a matrix-like or list-like layout.
         
         # For 2-rentan, it's usually a list of tables.
+        # Updated logic for matrix table (Boat - Odds pairs in columns)
+        # Table has 12 columns (6 pairs of Boat+Odds)
         tables = soup.find_all('table')
         for table in tables:
-            # Check if this table contains odds
-            # Usually rows have combinations like "1-2", "1-3", etc.
             rows = table.find_all('tr')
             for row in rows:
-                text = row.get_text(strip=True)
-                # Look for "X-Y" and a float
-                match = re.search(r'(\d)-(\d)\s*([\d.]+)', text)
-                if match:
-                    b1, b2, val = match.groups()
-                    try:
-                        odds[(int(b1), int(b2))] = float(val)
-                    except:
-                        pass
+                tds = row.find_all('td')
+                # 6 boats * 2 columns = 12 columns. Some rows might be shorter?
+                # We iterate pairs.
+                
+                for i in range(0, len(tds), 2):
+                    if i + 1 >= len(tds):
+                        break
+                    
+                    b_txt = tds[i].get_text(strip=True)
+                    o_txt = tds[i+1].get_text(strip=True)
+                    
+                    if b_txt.isdigit() and re.match(r'^\d+(\.\d+)?$', o_txt):
+                        try:
+                            opponent = int(b_txt)
+                            val = float(o_txt)
+                            
+                            # Which First Boat is this?
+                            # Columns 0-1 -> Boat 1
+                            # Columns 2-3 -> Boat 2
+                            # ...
+                            first_boat = (i // 2) + 1
+                            
+                            if 1 <= first_boat <= 6:
+                                odds[(first_boat, opponent)] = val
+                        except:
+                            pass
+        
+        # Fallback to regex if empty (maybe some stadiums differ?)
+        if not odds:
+             for table in tables:
+                rows = table.find_all('tr')
+                for row in rows:
+                    text = row.get_text(strip=True)
+                    match = re.search(r'(\d)-(\d)\s*([\d.]+)', text)
+                    if match:
+                        b1, b2, val = match.groups()
+                        try:
+                            odds[(int(b1), int(b2))] = float(val)
+                        except:
+                            pass
         return odds
 
     @staticmethod
