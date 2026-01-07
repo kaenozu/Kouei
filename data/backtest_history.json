@@ -1,0 +1,13 @@
+[
+  {
+    "date": "20251230",
+    "timestamp": "2025-12-30T16:39:33.200866",
+    "total_races": 315,
+    "total_entries": 1890,
+    "calibration": [],
+    "sim_total_bet": 12000,
+    "sim_total_return": 12260.0,
+    "sim_roi": 2.17,
+    "sim_wins": 74
+  }
+]

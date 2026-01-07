@@ -24,8 +24,14 @@ def run_optimization(trials=50):
     val_df = df.iloc[train_size:]
 
     # Preprocess
-    X_train, y_train = preprocess(train_df, is_training=True)
-    X_val, y_val = preprocess(val_df, is_training=True)
+    train_processed = preprocess(train_df, is_training=True)
+    val_processed = preprocess(val_df, is_training=True)
+    
+    # Extract features and target
+    X_train = train_processed[FEATURES]
+    y_train = train_processed['target']
+    X_val = val_processed[FEATURES]
+    y_val = val_processed['target']
 
     def objective(trial):
         params = {

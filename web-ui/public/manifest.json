@@ -1,25 +1,83 @@
 {
-    "short_name": "KyoteiAI",
-    "name": "Kyotei AI Suite Elite",
-    "icons": [
-        {
-            "src": "favicon.ico",
-            "sizes": "64x64 32x32 24x24 16x16",
-            "type": "image/x-icon"
-        },
-        {
-            "src": "logo192.png",
-            "type": "image/png",
-            "sizes": "192x192"
-        },
-        {
-            "src": "logo512.png",
-            "type": "image/png",
-            "sizes": "512x512"
-        }
-    ],
-    "start_url": ".",
-    "display": "standalone",
-    "theme_color": "#00f2ff",
-    "background_color": "#0a0b1e"
+  "name": "AI Kyotei - 競艇予測AI",
+  "short_name": "AI Kyotei",
+  "description": "AIによる競艇予測・分析システム",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a1a",
+  "theme_color": "#00f2ff",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/icon-72.svg",
+      "sizes": "72x72",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-96.svg",
+      "sizes": "96x96",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-128.svg",
+      "sizes": "128x128",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-144.svg",
+      "sizes": "144x144",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-152.svg",
+      "sizes": "152x152",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-384.svg",
+      "sizes": "384x384",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["sports", "finance"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "本日のレース",
+      "url": "/?tab=today",
+      "icons": [{"src": "/icon-96.svg", "sizes": "96x96"}]
+    },
+    {
+      "name": "分析ダッシュボード",
+      "url": "/?tab=analytics",
+      "icons": [{"src": "/icon-96.svg", "sizes": "96x96"}]
+    }
+  ],
+  "share_target": {
+    "action": "/share",
+    "method": "GET",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  }
 }

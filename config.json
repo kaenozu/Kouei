@@ -2,5 +2,5 @@
     "discord_webhook_url": "YOUR_DISCORD_WEBHOOK_URL_HERE",
     "notification_threshold": 0.5,
     "auto_train_threshold_races": 1000,
-    "last_trained_dataset_size": 10176
+    "last_trained_dataset_size": 35856
 }

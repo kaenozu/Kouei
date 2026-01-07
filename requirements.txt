@@ -1,7 +1,63 @@
-requests
-beautifulsoup4
-pandas
-lightgbm
-scikit-learn
-tqdm
-lxml
+# Core
+requests>=2.31.0,<3.0.0
+beautifulsoup4>=4.12.0,<5.0.0
+pandas>=2.0.0,<3.0.0
+lightgbm>=4.0.0,<5.0.0
+scikit-learn>=1.3.0,<2.0.0
+tqdm>=4.66.0,<5.0.0
+lxml>=4.9.0,<6.0.0
+numpy>=1.24.0,<2.0.0
+
+# API
+fastapi>=0.109.0,<1.0.0
+uvicorn[standard]>=0.27.0,<1.0.0
+pydantic>=2.5.0,<3.0.0
+pydantic-settings>=2.1.0,<3.0.0
+
+# Async
+aiohttp>=3.9.0,<4.0.0
+aiofiles>=23.2.0,<25.0.0
+
+# Cache
+redis>=5.0.0,<6.0.0
+
+# ML/Deep Learning
+torch>=2.1.0,<3.0.0
+onnxruntime>=1.16.0,<2.0.0
+xgboost>=2.0.0,<3.0.0
+catboost>=1.2.0,<2.0.0
+optuna>=3.5.0,<4.0.0
+
+# Statistics
+scipy>=1.11.0,<2.0.0
+
+# Logging
+structlog>=24.1.0,<25.0.0
+
+# Testing
+pytest>=7.4.0,<9.0.0
+pytest-asyncio>=0.23.0,<1.0.0
+pytest-cov>=4.1.0,<6.0.0
+httpx>=0.26.0,<1.0.0
+
+# LLM (optional)
+openai>=1.10.0,<2.0.0
+anthropic>=0.18.0,<1.0.0
+
+# ONNX Conversion (optional)
+# onnxmltools>=1.12.0
+# skl2onnx>=1.16.0
+
+# Websocket
+websockets>=12.0,<13.0
+
+# 追加パッケージ
+schedule==1.2.0
+sentence-transformers==2.2.2
+aiohttp==3.9.1
+beautifulsoup4==4.12.2
+numpy==1.24.3
+pandas==2.0.3
+scikit-learn==1.3.0
+joblib==1.3.2
+asyncio

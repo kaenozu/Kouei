@@ -2,9 +2,36 @@ import React, { useState, useEffect } from 'react';
 import { LayoutDashboard, TrendingUp, BarChart3, Settings, Info, CheckCircle2, Clock, Briefcase, Copy, Trophy, Star, Mic, MicOff, MessageSquare, Send, X, Box, Zap } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import WhatIfPanel from './components/WhatIfPanel';
+import { ToastContainer, useToast } from './components/Toast';
+import DatePicker from './components/DatePicker';
+import ModelExplainer from './components/ModelExplainer';
+import RealtimeDashboard from './components/RealtimeDashboard';
+import AnalyticsDashboard from './components/AnalyticsDashboard';
+import BacktestDashboard from './components/BacktestDashboard';
+import HighValueRaces from './components/HighValueRaces';
+import OddsAnalysis from './components/features/OddsAnalysis';
+import PredictionAccuracy from './components/features/PredictionAccuracy';
+import { NotificationCenter } from './components/features/NotificationCenter';
+import { SettingsPanel } from './components/features/SettingsPanel';
+import SmartBets from './components/features/SmartBets';
+import ExactaBets from './components/features/ExactaBets';
+import TrifectaBets from './components/features/TrifectaBets';
+import BettingTypeTabs from './components/BettingTypeTabs';
+import EnhancedBacktest from './components/EnhancedBacktest';
+import ValueBets from './components/features/ValueBets';
+import ResultsTracker from './components/ResultsTracker';
+import WideBets from './components/features/WideBets';
+import PlaceBets from './components/features/PlaceBets';
+import UpcomingBets from './components/features/UpcomingBets';
+import { Brain, Activity, Users, Target, Microscope } from 'lucide-react';
 
 const App = () => {
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState(() => {
+    // URLハッシュから初期タブを設定
+    const hash = window.location.hash.replace('#/', '');
+    const validTabs = ['dashboard', 'selection', 'portfolio', 'today', 'backtest', 'analytics', 'racer', 'highvalue', 'model-explainer', 'monitoring', 'tools', 'settings'];
+    return validTabs.includes(hash) ? hash : 'dashboard';
+  });
   const [params, setParams] = useState({ date: new Date().toISOString().split('T')[0].replace(/-/g, ''), jyo: '02', race: 1 });
   const [predictions, setPredictions] = useState([]);
   const [aiFocus, setAiFocus] = useState(null);
@@ -38,11 +65,12 @@ const App = () => {
   const [chatInput, setChatInput] = useState('');
   const [chatHistory, setChatHistory] = useState([{ role: 'ai', content: 'こんにちは！AIコンシェルジュです。今日のレースについて何かお手伝いしましょうか？' }]);
   const [show3D, setShow3D] = useState(false);
+  const { toasts, addToast, removeToast } = useToast();
 
   const fetchPrediction = async () => {
     setLoading(true);
     try {
-      const resp = await fetch(`http://localhost:8001/api/prediction?date=${params.date}&jyo=${params.jyo}&race=${params.race}`);
+      const resp = await fetch(`/api/prediction?date=${params.date}&jyo=${params.jyo}&race=${params.race}`);
       const data = await resp.json();
       if (data && data.predictions) {
         setPredictions(data.predictions);
@@ -65,10 +93,10 @@ const App = () => {
   const runWhatIfSimulation = async (modifiedFeatures) => {
     setWhatIfSimulating(true);
     try {
-      const resp = await fetch('http://localhost:8001/api/simulate-what-if', {
+      const resp = await fetch('/api/simulate-what-if', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: json.stringify({ modifications: modifiedFeatures })
+        body: JSON.stringify({ modifications: modifiedFeatures })
       });
       const data = await resp.json();
       if (data.status === 'success') {
@@ -89,24 +117,24 @@ const App = () => {
     if (!window.confirm(`${params.date} のデータを取得し、AIを再構築しますか？\n(数十秒かかります)`)) return;
     setFetching(true);
     try {
-      const resp = await fetch(`http://localhost:8001/api/fetch?date=${params.date}`, { method: 'POST' });
+      const resp = await fetch(`/api/fetch?date=${params.date}`, { method: 'POST' });
       const data = await resp.json();
       if (data.status === 'success') {
-        alert("データの取得と更新が完了しました。");
+        addToast("データの取得と更新が完了しました", "success");
         fetchPrediction();
         fetchStatus();
       } else {
-        alert("エラーが発生しました: " + data.message);
+        addToast("エラーが発生しました: " + data.message, "error");
       }
     } catch (e) {
-      alert("通信エラーが発生しました。");
+      addToast("通信エラーが発生しました", "error");
     }
     setFetching(false);
   };
 
   const fetchStatus = async () => {
     try {
-      const resp = await fetch('http://localhost:8001/api/status');
+      const resp = await fetch('/api/status');
       const data = await resp.json();
       setStatus(data);
     } catch (e) { }
@@ -114,7 +142,7 @@ const App = () => {
 
   const fetchStadiums = async () => {
     try {
-      const resp = await fetch('http://localhost:8001/api/stadiums');
+      const resp = await fetch('/api/stadiums');
       const data = await resp.json();
       setStadiums(data);
     } catch (e) { }
@@ -122,7 +150,7 @@ const App = () => {
 
   const fetchRaces = async () => {
     try {
-      const resp = await fetch(`http://localhost:8001/api/races?date=${params.date}&jyo=${params.jyo}`);
+      const resp = await fetch(`/api/races?date=${params.date}&jyo=${params.jyo}`);
       const data = await resp.json();
       if (Array.isArray(data)) {
         setRaceList(data);
@@ -157,10 +185,10 @@ const App = () => {
     setChatInput('');
 
     try {
-      const resp = await fetch('http://localhost:8001/api/concierge/chat', {
+      const resp = await fetch('/api/concierge/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: json.stringify({ query: chatInput })
+        body: JSON.stringify({ query: chatInput })
       });
       const data = await resp.json();
       setChatHistory(prev => [...prev, { role: 'ai', content: data.answer }]);
@@ -171,7 +199,7 @@ const App = () => {
 
   const fetchSimulation = async () => {
     try {
-      const resp = await fetch('http://localhost:8001/api/simulation?threshold=0.4');
+      const resp = await fetch('/api/simulation?threshold=0.4');
       const data = await resp.json();
       if (data.history && data.summary) {
         setSimulationData(data);
@@ -183,7 +211,7 @@ const App = () => {
 
   const fetchTodayRaces = async () => {
     try {
-      const resp = await fetch('http://localhost:8001/api/today');
+      const resp = await fetch('/api/today');
       const data = await resp.json();
       if (data && data.races) {
         setTodayRaces(data.races);
@@ -197,7 +225,7 @@ const App = () => {
   const fetchBacktest = async () => {
     setBacktestLoading(true);
     try {
-      const resp = await fetch('http://localhost:8001/api/backtest', {
+      const resp = await fetch('/api/backtest', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(backtestFilters)
@@ -210,7 +238,7 @@ const App = () => {
 
   const fetchSync = async () => {
     try {
-      await fetch('http://localhost:8001/api/sync');
+      await fetch('/api/sync');
     } catch (e) {
       console.error('Sync failed', e);
     }
@@ -225,7 +253,6 @@ const App = () => {
     // Refresh today's races every 2 minutes
     const interval = setInterval(fetchTodayRaces, 120000);
     return () => clearInterval(interval);
-    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -234,11 +261,15 @@ const App = () => {
     fetchPortfolio();
 
     // WebSocket connection for real-time notifications
-    const ws = new WebSocket('ws://localhost:8001/ws');
+    const ws = new WebSocket('wss://tree-router.exe.xyz:8000/api/ws');
+    ws.onopen = () => console.log('WebSocket connected');
+    ws.onclose = () => console.log('WebSocket disconnected');
+    ws.onerror = (error) => console.error('WebSocket error', error);
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
         setNotifications(prev => [data, ...prev].slice(0, 5));
+        console.log('WebSocket message received', data);
       } catch (e) {
         console.error('WS Error', e);
       }
@@ -248,7 +279,7 @@ const App = () => {
 
   const fetchPortfolio = async () => {
     try {
-      const resp = await fetch('http://localhost:8001/api/portfolio');
+      const resp = await fetch('/api/portfolio');
       const data = await resp.json();
       setPortfolio(data);
     } catch (e) { }
@@ -256,7 +287,7 @@ const App = () => {
 
   const fetchStrategies = async () => {
     try {
-      const resp = await fetch('http://localhost:8001/api/strategies');
+      const resp = await fetch('/api/strategies');
       const data = await resp.json();
       setStrategies(data);
     } catch (e) { }
@@ -266,9 +297,9 @@ const App = () => {
     if (!window.confirm("モデルの最適化を開始しますか？(数分〜数時間かかります)")) return;
     setOptimizing(true);
     try {
-      await fetch('http://localhost:8001/api/optimize', { method: 'POST' });
-      alert("最適化を開始しました。完了までお待ちください。");
-    } catch (e) { alert("エラーが発生しました"); }
+      await fetch('/api/optimize', { method: 'POST' });
+      addToast("最適化を開始しました", "info");
+    } catch (e) { addToast("エラーが発生しました", "error"); }
     setOptimizing(false);
   };
 
@@ -276,11 +307,11 @@ const App = () => {
     if (!window.confirm("お宝条件の発掘を開始しますか？\n(全データの総当たりシミュレーションを行います)")) return;
     setDiscovering(true);
     try {
-      await fetch('http://localhost:8001/api/strategy/discover', { method: 'POST' });
-      alert("発掘を開始しました。数分後にリロードして結果を確認してください。");
+      await fetch('/api/strategy/discover', { method: 'POST' });
+      addToast("発掘を開始しました", "info");
       // Poll for update?
       setTimeout(fetchStrategies, 10000);
-    } catch (e) { alert("エラーが発生しました"); }
+    } catch (e) { addToast("エラーが発生しました", "error"); }
     setDiscovering(false);
   };
 
@@ -289,7 +320,7 @@ const App = () => {
     if (!racerSearch) return;
     setRacerLoading(true);
     try {
-      const resp = await fetch(`http://localhost:8001/api/racer/${racerSearch}`);
+      const resp = await fetch(`/api/racer/${racerSearch}`);
       const data = await resp.json();
       setRacerStats(data);
     } catch (e) {
@@ -303,7 +334,7 @@ const App = () => {
     if (!selectedMonteCarloStrategy) return;
     setMonteCarloLoading(true);
     try {
-      const resp = await fetch(`http://localhost:8001/api/monte-carlo/${selectedMonteCarloStrategy}?n_simulations=1000`);
+      const resp = await fetch(`/api/monte-carlo/${selectedMonteCarloStrategy}?n_simulations=1000`);
       const data = await resp.json();
       setMonteCarloResult(data);
     } catch (e) {
@@ -767,10 +798,68 @@ const App = () => {
     </div>
   );
 
+  const renderSettings = () => (
+    <div style={{ padding: '1rem', maxWidth: '800px', margin: '0 auto' }}>
+      <h1 style={{ fontSize: '2.5rem', fontWeight: '900', marginBottom: '0.5rem' }}>⚙️ Settings</h1>
+      <p style={{ color: 'var(--text-dim)', marginBottom: '2rem' }}>システム設定</p>
+
+      <div className="card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
+        <h3 style={{ marginBottom: '1rem' }}>通知設定</h3>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <input type="checkbox" defaultChecked />
+            <span>高確率レース通知を受け取る</span>
+          </label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <input type="checkbox" defaultChecked />
+            <span>戦略アラートを受け取る</span>
+          </label>
+        </div>
+      </div>
+
+      <div className="card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
+        <h3 style={{ marginBottom: '1rem' }}>モデル設定</h3>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div>
+            <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: '600', marginBottom: '0.5rem' }}>
+              通知閾値 (確率)
+            </label>
+            <input type="range" min="0.3" max="0.7" step="0.05" defaultValue="0.5" style={{ width: '100%' }} />
+          </div>
+          <button className="btn-primary" onClick={triggerOptimization} disabled={optimizing} style={{ width: 'fit-content' }}>
+            {optimizing ? '最適化中...' : 'ハイパーパラメータ最適化'}
+          </button>
+          <button className="btn-primary" onClick={triggerDiscovery} disabled={discovering} style={{ width: 'fit-content', background: 'var(--secondary)' }}>
+            {discovering ? '発掘中...' : 'お宝条件を発掘'}
+          </button>
+        </div>
+      </div>
+
+      <div className="card" style={{ padding: '1.5rem' }}>
+        <h3 style={{ marginBottom: '1rem' }}>アクティブ戦略</h3>
+        {strategies.length === 0 ? (
+          <p style={{ color: 'var(--text-dim)' }}>戦略が登録されていません</p>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            {strategies.map((s, i) => (
+              <div key={i} style={{ padding: '0.75rem', background: 'var(--glass-highlight)', borderRadius: '8px', display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ fontWeight: '700' }}>{s.display_name || s.name}</span>
+                <span style={{ color: s.stats?.roi > 100 ? 'var(--success)' : 'var(--error)' }}>ROI: {s.stats?.roi?.toFixed(1)}%</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <div className="dashboard">
       <aside className="sidebar">
-        <h1>AI KYOTEI</h1>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+          <h1 style={{ margin: 0 }}>AI KYOTEI</h1>
+          <NotificationCenter />
+        </div>
         <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
           <div className={`nav-item ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveTab('dashboard')}>
             <LayoutDashboard size={22} /> ダッシュボード
@@ -787,11 +876,44 @@ const App = () => {
           <div className={`nav-item ${activeTab === 'backtest' ? 'active' : ''}`} onClick={() => setActiveTab('backtest')}>
             <BarChart3 size={22} /> バックテスト・ラボ
           </div>
+          <div className={`nav-item ${activeTab === 'analytics' ? 'active' : ''}`} onClick={() => setActiveTab('analytics')}>
+            <BarChart3 size={22} /> 分析ダッシュボード
+          </div>
           <div className={`nav-item ${activeTab === 'racer' ? 'active' : ''}`} onClick={() => setActiveTab('racer')}>
             🏆 選手追跡
           </div>
+          <div className={`nav-item ${activeTab === 'highvalue' ? 'active' : ''}`} onClick={() => setActiveTab('highvalue')}>
+            <Target size={22} /> 高確率レース
+          </div>
+          <div className={`nav-item ${activeTab === 'exacta' ? 'active' : ''}`} onClick={() => setActiveTab('exacta')}>
+            <Zap size={22} /> 2連単予測
+          </div>
+          <div className={`nav-item ${activeTab === 'trifecta' ? 'active' : ''}`} onClick={() => setActiveTab('trifecta')}>
+            <Trophy size={22} /> 3連単予測
+          </div>
+          <div className={`nav-item ${activeTab === 'wide' ? 'active' : ''}`} onClick={() => setActiveTab('wide')}>
+            🎪 ワイド予測
+          </div>
+          <div className={`nav-item ${activeTab === 'place' ? 'active' : ''}`} onClick={() => setActiveTab('place')}>
+            🎯 複勝予測
+          </div>
+          <div className={`nav-item ${activeTab === 'enhanced-backtest' ? 'active' : ''}`} onClick={() => setActiveTab('enhanced-backtest')}>
+            🔬 高度バックテスト
+          </div>
+          <div className={`nav-item ${activeTab === 'results' ? 'active' : ''}`} onClick={() => setActiveTab('results')}>
+            📋 結果追跡
+          </div>
+          <div className={`nav-item ${activeTab === 'value-bets' ? 'active' : ''}`} onClick={() => setActiveTab('value-bets')}>
+            💰 バリューベット
+          </div>
+          <div className={`nav-item ${activeTab === 'model-explainer' ? 'active' : ''}`} onClick={() => setActiveTab('model-explainer')}>
+            <Brain size={22} /> モデル解釈
+          </div>
+          <div className={`nav-item ${activeTab === 'monitoring' ? 'active' : ''}`} onClick={() => setActiveTab('monitoring')}>
+            <Activity size={22} /> リアルタイム監視
+          </div>
           <div className={`nav-item ${activeTab === 'tools' ? 'active' : ''}`} onClick={() => setActiveTab('tools')}>
-            🔬 AI Tools
+            <Microscope size={22} /> AI Tools
           </div>
           <div className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveTab('settings')}>
             <Settings size={22} /> 設定
@@ -817,7 +939,13 @@ const App = () => {
           <div style={{ padding: '1rem' }}>
             <h1 style={{ fontSize: '2.5rem', fontWeight: '900', marginBottom: '0.5rem' }}>Race Selection</h1>
             <p style={{ color: 'var(--text-dim)', marginBottom: '3rem' }}>予測を確認するレース場とレース番号を指定してください</p>
-            {renderSelection()}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 400px', gap: '2rem' }}>
+              <div>{renderSelection()}</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                <OddsAnalysis jyo={params.jyo} race={params.race} date={params.date} />
+                <PredictionAccuracy />
+              </div>
+            </div>
           </div>
         ) : activeTab === 'today' ? (
           <div style={{ padding: '1rem' }}>
@@ -940,14 +1068,46 @@ const App = () => {
           renderPortfolio()
         ) : activeTab === 'backtest' ? (
           <div style={{ padding: '1rem' }}>
-            {renderBacktestLab()}
+            <BacktestDashboard />
           </div>
+        ) : activeTab === 'analytics' ? (
+          <AnalyticsDashboard />
         ) : activeTab === 'racer' ? (
           renderRacerTracker()
+        ) : activeTab === 'highvalue' ? (
+          <SmartBets />
+        ) : activeTab === 'exacta' ? (
+          <ExactaBets />
+        ) : activeTab === 'trifecta' ? (
+          <TrifectaBets />
+        ) : activeTab === 'wide' ? (
+          <div style={{ padding: '1rem' }}>
+            <WideBets />
+          </div>
+        ) : activeTab === 'place' ? (
+          <div style={{ padding: '1rem' }}>
+            <PlaceBets />
+          </div>
+        ) : activeTab === 'enhanced-backtest' ? (
+          <div style={{ padding: '1rem' }}>
+            <EnhancedBacktest />
+          </div>
+        ) : activeTab === 'results' ? (
+          <div style={{ padding: '1rem' }}>
+            <ResultsTracker />
+          </div>
+        ) : activeTab === 'value-bets' ? (
+          <div style={{ padding: '1rem' }}>
+            <ValueBets />
+          </div>
+        ) : activeTab === 'model-explainer' ? (
+          <ModelExplainer />
+        ) : activeTab === 'monitoring' ? (
+          <RealtimeDashboard />
         ) : activeTab === 'tools' ? (
           renderTools()
         ) : activeTab === 'settings' ? (
-          renderSettings()
+          <SettingsPanel />
         ) : (
           <>
             <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -1063,11 +1223,21 @@ const App = () => {
               </div>
             </div>
 
-            <WhatIfPanel
-              initialFeatures={whatIfFeatures}
-              onSimulate={runWhatIfSimulation}
-              loading={whatIfSimulating}
-            />
+            {/* Quick Actions: Upcoming Bets + What-If */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+              <UpcomingBets 
+                onSelectRace={(jyo, race) => {
+                  setParams({ ...params, jyo, race });
+                  setActiveTab('dashboard');
+                  fetchPrediction();
+                }} 
+              />
+              <WhatIfPanel
+                initialFeatures={whatIfFeatures}
+                onSimulate={runWhatIfSimulation}
+                loading={whatIfSimulating}
+              />
+            </div>
 
             <section className="stats-grid">
               <div className="card" style={{ gridColumn: 'span 2' }}>
@@ -1282,6 +1452,33 @@ const App = () => {
                           </div>
                           <div className="prob-pct">{(p.probability * 100).toFixed(1)}%</div>
                         </div>
+                        {/* 詳細情報行 */}
+                        <div style={{ padding: '0.75rem 1rem', background: 'rgba(0,0,0,0.2)', borderTop: '1px solid var(--glass-border)', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.5rem', fontSize: '0.75rem' }}>
+                          <div style={{ textAlign: 'center' }}>
+                            <div style={{ color: 'var(--text-dim)', marginBottom: '2px' }}>勝率</div>
+                            <div style={{ fontWeight: '700', color: p.racer_win_rate > 6 ? '#00ff88' : '#fff' }}>
+                              {p.racer_win_rate?.toFixed(2) || '-'}
+                            </div>
+                          </div>
+                          <div style={{ textAlign: 'center' }}>
+                            <div style={{ color: 'var(--text-dim)', marginBottom: '2px' }}>{p.boat_no}コース勝率</div>
+                            <div style={{ fontWeight: '700', color: p.course_win_rate > 0.3 ? '#00f2ff' : p.course_win_rate ? '#fff' : '#666' }}>
+                              {p.course_win_rate ? (p.course_win_rate * 100).toFixed(0) + '%' : '-'}
+                            </div>
+                          </div>
+                          <div style={{ textAlign: 'center' }}>
+                            <div style={{ color: 'var(--text-dim)', marginBottom: '2px' }}>モーター2連</div>
+                            <div style={{ fontWeight: '700', color: p.motor_2ren > 40 ? '#00ff88' : '#fff' }}>
+                              {p.motor_2ren?.toFixed(1) || '-'}%
+                            </div>
+                          </div>
+                          <div style={{ textAlign: 'center' }}>
+                            <div style={{ color: 'var(--text-dim)', marginBottom: '2px' }}>展示</div>
+                            <div style={{ fontWeight: '700' }}>
+                              {p.exhibition_time?.toFixed(2) || '-'}
+                            </div>
+                          </div>
+                        </div>
                         <div style={{ padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.02)', borderTop: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8rem' }}>
                           <span style={{ color: 'var(--text-dim)' }}>Recommended Bet (Kelly):</span>
                           <span style={{ fontWeight: '800', color: 'var(--success)' }}>
@@ -1366,7 +1563,8 @@ const App = () => {
             </div>
           )}
         </div>
-      </main >
+      </main>
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
     </div >
   );
 };

@@ -1,0 +1,254 @@
+[
+  {
+    "timestamp": "2025-12-30T19:38:45.290594",
+    "drift_detected": true,
+    "metrics": {
+      "racer_win_rate": {
+        "p_value": 0.3156972307146517,
+        "drift": false,
+        "statistic": 0.04494847283749126
+      },
+      "motor_2ren": {
+        "p_value": 0.0036065924884701316,
+        "drift": true,
+        "statistic": 0.08354628118442528
+      },
+      "exhibition_time": {
+        "p_value": 1.1597526369776751e-19,
+        "drift": true,
+        "statistic": 0.2212245874192777
+      },
+      "wind_speed": {
+        "p_value": 8.647268437511098e-39,
+        "drift": true,
+        "statistic": 0.310580088598741
+      },
+      "wave_height": {
+        "p_value": 6.991835984256017e-22,
+        "drift": true,
+        "statistic": 0.23321333644206108
+      },
+      "temperature": {
+        "p_value": 9.889986946378346e-25,
+        "drift": true,
+        "statistic": 0.24805362555374214
+      }
+    }
+  },
+  {
+    "timestamp": "2025-12-31T00:05:48.334870",
+    "drift_detected": true,
+    "metrics": {
+      "racer_win_rate": {
+        "p_value": 0.3156972307146517,
+        "drift": false,
+        "statistic": 0.04494847283749126
+      },
+      "motor_2ren": {
+        "p_value": 0.0036065924884701316,
+        "drift": true,
+        "statistic": 0.08354628118442528
+      },
+      "exhibition_time": {
+        "p_value": 1.1597526369776751e-19,
+        "drift": true,
+        "statistic": 0.2212245874192777
+      },
+      "wind_speed": {
+        "p_value": 8.647268437511098e-39,
+        "drift": true,
+        "statistic": 0.310580088598741
+      },
+      "wave_height": {
+        "p_value": 6.991835984256017e-22,
+        "drift": true,
+        "statistic": 0.23321333644206108
+      },
+      "temperature": {
+        "p_value": 9.889986946378346e-25,
+        "drift": true,
+        "statistic": 0.24805362555374214
+      }
+    }
+  },
+  {
+    "timestamp": "2025-12-31T01:34:13.681865",
+    "drift_detected": true,
+    "metrics": {
+      "racer_win_rate": {
+        "p_value": 0.3156972307146517,
+        "drift": false,
+        "statistic": 0.04494847283749126
+      },
+      "motor_2ren": {
+        "p_value": 0.0036065924884701316,
+        "drift": true,
+        "statistic": 0.08354628118442528
+      },
+      "exhibition_time": {
+        "p_value": 1.1597526369776751e-19,
+        "drift": true,
+        "statistic": 0.2212245874192777
+      },
+      "wind_speed": {
+        "p_value": 8.647268437511098e-39,
+        "drift": true,
+        "statistic": 0.310580088598741
+      },
+      "wave_height": {
+        "p_value": 6.991835984256017e-22,
+        "drift": true,
+        "statistic": 0.23321333644206108
+      },
+      "temperature": {
+        "p_value": 9.889986946378346e-25,
+        "drift": true,
+        "statistic": 0.24805362555374214
+      }
+    }
+  },
+  {
+    "timestamp": "2025-12-31T04:00:35.051326",
+    "drift_detected": true,
+    "metrics": {
+      "racer_win_rate": {
+        "p_value": 0.29027691962489294,
+        "drift": false,
+        "statistic": 0.045726648637403784
+      },
+      "motor_2ren": {
+        "p_value": 0.0015250692010080479,
+        "drift": true,
+        "statistic": 0.08857707509881423
+      },
+      "exhibition_time": {
+        "p_value": 1.0995569133670818e-21,
+        "drift": true,
+        "statistic": 0.23283953660340154
+      },
+      "wind_speed": {
+        "p_value": 5.077355507034882e-21,
+        "drift": true,
+        "statistic": 0.22810748819428828
+      },
+      "wave_height": {
+        "p_value": 3.093960138086702e-17,
+        "drift": true,
+        "statistic": 0.20625050595907354
+      },
+      "temperature": {
+        "p_value": 1.9869452927157719e-22,
+        "drift": true,
+        "statistic": 0.23569732403867777
+      }
+    }
+  },
+  {
+    "timestamp": "2025-12-31T04:54:04.884735",
+    "drift_detected": true,
+    "metrics": {
+      "racer_win_rate": {
+        "p_value": 0.2784932781785523,
+        "drift": false,
+        "statistic": 0.04616030688471633
+      },
+      "motor_2ren": {
+        "p_value": 0.0008283560465596617,
+        "drift": true,
+        "statistic": 0.09214819301433474
+      },
+      "exhibition_time": {
+        "p_value": 1.6289685277720124e-25,
+        "drift": true,
+        "statistic": 0.2529213483146067
+      },
+      "wind_speed": {
+        "p_value": 3.786269925136636e-13,
+        "drift": true,
+        "statistic": 0.17905022250476796
+      },
+      "wave_height": {
+        "p_value": 7.035533842179028e-14,
+        "drift": true,
+        "statistic": 0.1840979020979021
+      },
+      "temperature": {
+        "p_value": 1.0302183896695282e-23,
+        "drift": true,
+        "statistic": 0.24171265098537825
+      }
+    }
+  },
+  {
+    "timestamp": "2025-12-31T09:16:02.576830",
+    "drift_detected": true,
+    "metrics": {
+      "racer_win_rate": {
+        "p_value": 0.23202125949058328,
+        "drift": false,
+        "statistic": 0.04798433420365535
+      },
+      "motor_2ren": {
+        "p_value": 9.332668898301882e-06,
+        "drift": true,
+        "statistic": 0.11499564838990427
+      },
+      "exhibition_time": {
+        "p_value": 6.102179678068022e-18,
+        "drift": true,
+        "statistic": 0.21080907197408008
+      },
+      "wind_speed": {
+        "p_value": 0.284831157627155,
+        "drift": false,
+        "statistic": 0.04565291912158543
+      },
+      "wave_height": {
+        "p_value": 1.6269572585101212e-13,
+        "drift": true,
+        "statistic": 0.18023245848955544
+      },
+      "temperature": {
+        "p_value": 1.037161130764703e-83,
+        "drift": true,
+        "statistic": 0.4466705945366899
+      }
+    }
+  },
+  {
+    "timestamp": "2025-12-31T12:00:34.117715",
+    "drift_detected": true,
+    "metrics": {
+      "racer_win_rate": {
+        "p_value": 0.034071874119014044,
+        "drift": true,
+        "statistic": 0.06584520123839009
+      },
+      "motor_2ren": {
+        "p_value": 5.921739548474218e-06,
+        "drift": true,
+        "statistic": 0.11659442724458205
+      },
+      "exhibition_time": {
+        "p_value": 1.5763820443416218e-25,
+        "drift": true,
+        "statistic": 0.2500126133228222
+      },
+      "wind_speed": {
+        "p_value": 0.07606798759400243,
+        "drift": true,
+        "statistic": 0.059
+      },
+      "wave_height": {
+        "p_value": 1.9408100307503562e-17,
+        "drift": true,
+        "statistic": 0.20434848484848483
+      },
+      "temperature": {
+        "p_value": 2.3317603229883226e-117,
+        "drift": true,
+        "statistic": 0.5218232323232324
+      }
+    }
+  }
+]

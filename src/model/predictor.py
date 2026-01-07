@@ -38,9 +38,10 @@ class Predictor:
         else:
             print("No model found.")
 
-    def predict(self, X):
+    def predict(self, X, pred_contrib=False):
         """
         X: numpy array or pandas DataFrame
+        pred_contrib: If True, return SHAP contributions (LGBM only)
         """
         if self.mode == "onnx":
             # ONNX requires float32 numpy
@@ -90,6 +91,6 @@ class Predictor:
                 return res
             
         elif self.mode == "lgbm":
-            return self.bst.predict(X)
+            return self.bst.predict(X, pred_contrib=pred_contrib)
         else:
             return np.zeros(len(X))

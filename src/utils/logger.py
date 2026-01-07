@@ -1,119 +1,195 @@
-"""
-Structured Logging Configuration
-Outputs JSON format logs for easy parsing and monitoring
-"""
+"""Structured Logging with JSON format support"""
 import logging
-import json
 import sys
+import json
 from datetime import datetime
-from pathlib import Path
+from typing import Any, Optional
+import traceback
+from functools import wraps
+import time
+
 
 class JSONFormatter(logging.Formatter):
-    """Custom formatter to output logs in JSON format"""
+    """JSON log formatter for structured logging"""
     
-    def format(self, record):
+    def format(self, record: logging.LogRecord) -> str:
         log_data = {
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.utcnow().isoformat() + "Z",
             "level": record.levelname,
             "logger": record.name,
             "message": record.getMessage(),
             "module": record.module,
             "function": record.funcName,
-            "line": record.lineno
+            "line": record.lineno,
         }
-        
-        # Add exception info if present
-        if record.exc_info:
-            log_data["exception"] = self.formatException(record.exc_info)
         
         # Add extra fields
         if hasattr(record, 'extra_data'):
             log_data.update(record.extra_data)
         
-        return json.dumps(log_data, ensure_ascii=False)
+        # Add exception info if present
+        if record.exc_info:
+            log_data["exception"] = {
+                "type": record.exc_info[0].__name__ if record.exc_info[0] else None,
+                "message": str(record.exc_info[1]) if record.exc_info[1] else None,
+                "traceback": traceback.format_exception(*record.exc_info) if record.exc_info[0] else None
+            }
+        
+        return json.dumps(log_data, ensure_ascii=False, default=str)
 
-def setup_logger(name="kyotei_ai", log_dir="logs", level=logging.INFO):
-    """
-    Setup structured logger with file and console handlers
+
+class PrettyFormatter(logging.Formatter):
+    """Human-readable formatter for development"""
     
-    Args:
-        name: Logger name
-        log_dir: Directory for log files
-        level: Logging level
+    COLORS = {
+        'DEBUG': '\033[36m',    # Cyan
+        'INFO': '\033[32m',     # Green
+        'WARNING': '\033[33m',  # Yellow
+        'ERROR': '\033[31m',    # Red
+        'CRITICAL': '\033[35m', # Magenta
+    }
+    RESET = '\033[0m'
     
-    Returns:
-        Configured logger instance
-    """
-    logger = logging.getLogger(name)
-    logger.setLevel(level)
+    def format(self, record: logging.LogRecord) -> str:
+        color = self.COLORS.get(record.levelname, '')
+        timestamp = datetime.now().strftime('%H:%M:%S')
+        
+        # Format extra data if present
+        extra = ""
+        if hasattr(record, 'extra_data') and record.extra_data:
+            extra = f" | {record.extra_data}"
+        
+        return f"{color}[{timestamp}] {record.levelname:8}{self.RESET} {record.name}: {record.getMessage()}{extra}"
+
+
+class StructuredLogger:
+    """Enhanced logger with structured logging support"""
     
-    # Avoid duplicate handlers
-    if logger.handlers:
-        return logger
+    def __init__(self, name: str = "kouei", json_format: bool = False, level: int = logging.INFO):
+        self.logger = logging.getLogger(name)
+        self.logger.setLevel(level)
+        self.logger.handlers = []  # Clear existing handlers
+        
+        handler = logging.StreamHandler(sys.stdout)
+        handler.setLevel(level)
+        
+        if json_format:
+            handler.setFormatter(JSONFormatter())
+        else:
+            handler.setFormatter(PrettyFormatter())
+        
+        self.logger.addHandler(handler)
     
-    # Create log directory
-    Path(log_dir).mkdir(exist_ok=True)
+    def _log(self, level: int, message: str, **kwargs):
+        """Internal log method with extra data support"""
+        extra = {'extra_data': kwargs} if kwargs else {}
+        self.logger.log(level, message, extra=extra)
     
-    # File handler (JSON format)
-    file_handler = logging.FileHandler(
-        f"{log_dir}/app.log",
-        encoding='utf-8'
-    )
-    file_handler.setLevel(level)
-    file_handler.setFormatter(JSONFormatter())
+    def debug(self, message: str, **kwargs):
+        self._log(logging.DEBUG, message, **kwargs)
     
-    # Console handler (human-readable)
-    console_handler = logging.StreamHandler(sys.stdout)
-    console_handler.setLevel(logging.INFO)
-    console_formatter = logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    )
-    console_handler.setFormatter(console_formatter)
+    def info(self, message: str, **kwargs):
+        self._log(logging.INFO, message, **kwargs)
     
-    logger.addHandler(file_handler)
-    logger.addHandler(console_handler)
+    def warning(self, message: str, **kwargs):
+        self._log(logging.WARNING, message, **kwargs)
     
-    return logger
+    def error(self, message: str, **kwargs):
+        self._log(logging.ERROR, message, **kwargs)
+    
+    def critical(self, message: str, **kwargs):
+        self._log(logging.CRITICAL, message, **kwargs)
+    
+    def exception(self, message: str, **kwargs):
+        """Log exception with traceback"""
+        self.logger.exception(message, extra={'extra_data': kwargs})
+
+
+def log_execution_time(logger: Optional[StructuredLogger] = None):
+    """Decorator to log function execution time"""
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            start = time.time()
+            result = func(*args, **kwargs)
+            elapsed = time.time() - start
+            
+            log = logger or get_logger()
+            log.debug(
+                f"{func.__name__} completed",
+                duration_ms=round(elapsed * 1000, 2),
+                function=func.__name__
+            )
+            return result
+        
+        @wraps(func)
+        async def async_wrapper(*args, **kwargs):
+            start = time.time()
+            result = await func(*args, **kwargs)
+            elapsed = time.time() - start
+            
+            log = logger or get_logger()
+            log.debug(
+                f"{func.__name__} completed",
+                duration_ms=round(elapsed * 1000, 2),
+                function=func.__name__
+            )
+            return result
+        
+        import asyncio
+        if asyncio.iscoroutinefunction(func):
+            return async_wrapper
+        return wrapper
+    return decorator
+
+
+def log_api_request(logger: Optional[StructuredLogger] = None):
+    """Decorator for API endpoint logging"""
+    def decorator(func):
+        @wraps(func)
+        async def wrapper(*args, **kwargs):
+            start = time.time()
+            log = logger or get_logger()
+            
+            try:
+                result = await func(*args, **kwargs)
+                elapsed = time.time() - start
+                
+                log.info(
+                    f"API {func.__name__}",
+                    endpoint=func.__name__,
+                    duration_ms=round(elapsed * 1000, 2),
+                    status="success"
+                )
+                return result
+            except Exception as e:
+                elapsed = time.time() - start
+                log.error(
+                    f"API {func.__name__} failed",
+                    endpoint=func.__name__,
+                    duration_ms=round(elapsed * 1000, 2),
+                    status="error",
+                    error=str(e)
+                )
+                raise
+        return wrapper
+    return decorator
+
 
 # Global logger instance
-logger = setup_logger()
+_logger: Optional[StructuredLogger] = None
 
-# Example usage helpers
-def log_prediction(race_id, boat_no, probability, model="ensemble"):
-    """Log a prediction event"""
-    logger.info(
-        f"Prediction: {race_id} boat {boat_no}",
-        extra={'extra_data': {
-            'race_id': race_id,
-            'boat_no': boat_no,
-            'probability': probability,
-            'model': model
-        }}
-    )
 
-def log_error(error_msg, context=None):
-    """Log an error with context"""
-    logger.error(
-        error_msg,
-        extra={'extra_data': context or {}},
-        exc_info=True
-    )
+def get_logger(name: str = "kouei", json_format: bool = False) -> StructuredLogger:
+    """Get or create global logger instance"""
+    global _logger
+    if _logger is None:
+        import os
+        json_format = os.environ.get("LOG_FORMAT", "pretty").lower() == "json"
+        level = logging.DEBUG if os.environ.get("DEBUG", "false").lower() == "true" else logging.INFO
+        _logger = StructuredLogger(name=name, json_format=json_format, level=level)
+    return _logger
 
-def log_api_request(endpoint, method, status_code, duration_ms):
-    """Log API request"""
-    logger.info(
-        f"API {method} {endpoint}",
-        extra={'extra_data': {
-            'endpoint': endpoint,
-            'method': method,
-            'status_code': status_code,
-            'duration_ms': duration_ms
-        }}
-    )
 
-if __name__ == "__main__":
-    # Test logging
-    logger.info("Kyotei AI System Started")
-    log_prediction("20250130_01_12", 1, 0.75)
-    logger.warning("High memory usage detected")
-    logger.debug("Debug information")
+# Convenience alias
+logger = get_logger()

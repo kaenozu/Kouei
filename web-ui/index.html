@@ -1,12 +1,36 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="ja">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#00f2ff" />
+    <meta name="description" content="AIによる競艇予測・分析システム" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="AI Kyotei" />
+    
+    <link rel="manifest" href="/manifest.json" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>web-ui</title>
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+    
+    <title>AI Kyotei - 競艇予測AI</title>
+    
+    <!-- Preload critical resources -->
+    <link rel="preconnect" href="http://localhost:8001" />
+    
+    <script>
+      // Register service worker
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then(reg => console.log('SW registered:', reg.scope))
+            .catch(err => console.log('SW registration failed:', err));
+        });
+      }
+    </script>
   </head>
   <body>
+    <a href="#main-content" class="skip-link">メインコンテンツへスキップ</a>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
